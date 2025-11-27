@@ -12,10 +12,10 @@ class DataLoader:
         df = pd.read_csv(path)
         return df
     
-    def load_dados_disciplinas(self, path: str = PATH_DADOS_DISCIPLINAS)
+    def load_dados_disciplinas(self, path: str = PATH_DADOS_DISCIPLINAS) -> pd.DataFrame:
         df = pd.read_csv(path)
         return df
     
-    def load_dados_curso(self, path: str = PATH_DADOS_CURSOS): 
+    def load_dados_curso(self, path: str = PATH_DADOS_CURSOS) -> pd.DataFrame: 
         df = pd.read_csv(path)
         return df 
