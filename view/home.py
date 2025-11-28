@@ -53,7 +53,84 @@ def home_view():
 
     st.write("")  
     st.write("")  
+    st.markdown(
+                """
+                <h1 style="text-align:center; font-size:2.4rem; font-weight:700;">
+                    Como isso funciona?
+                </h1>
+                """,
+                unsafe_allow_html=True
+            )
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown(
+            f"""
+            <div style="{CARD_STYLE_BOXES}">
+                <div style="font-size:2rem;">1</div>
+                <h3 style="margin-top:10px;">nome etapa</h3>
+                <p>texto etapa</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.write("")
 
+        st.markdown(
+            f"""
+            <div style="{CARD_STYLE_BOXES}">
+                <div style="font-size:2rem;">4️</div>
+                <h3 style="margin-top:10px;">nome etapa</h3>
+                <p>texto etapa</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with col2: 
+        st.markdown(
+                    f"""
+                    <div style="{CARD_STYLE_BOXES}">
+                        <div style="font-size:2rem;">2️</div>
+                        <h3 style="margin-top:10px;">nome etapa</h3>
+                        <p>texto etapa</p>
+                    """,
+                    unsafe_allow_html=True,
+                )
+        st.write("")
+        st.markdown(
+                    f"""
+                    <div style="{CARD_STYLE_BOXES}">
+                        <div style="font-size:2rem;">5️</div>
+                        <h3 style="margin-top:10px;">nome etapa</h3>
+                        <p>texto etapa</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+    with col3:
+        st.markdown(
+                f"""
+                <div style="{CARD_STYLE_BOXES}">
+                    <div style="font-size:2rem;">3️</div>
+                    <h3 style="margin-top:10px;">nome etapa</h3>
+                    <p>texto etapa</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        st.write("")
+        st.markdown(
+                f"""
+                <div style="{CARD_STYLE_BOXES}">
+                    <div style="font-size:2rem;">6️</div>
+                    <h3 style="margin-top:10px;">nome etapa</h3>
+                    <p>texto etapa</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    st.write("")  
+    st.write("")  
 
     st.markdown(
         """
@@ -77,6 +154,7 @@ def home_view():
         </p>
         """,
         unsafe_allow_html=True)
+    
     
     col1, col2, col3 = st.columns(3)
 
