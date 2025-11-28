@@ -74,19 +74,3 @@ ID_PERGUNTA,ID_QUESTIONARIO,TITULO,CL_PERGUNTA,Ordem,Coluna1,PERGUNTA
 2030,647,Organização e Gestão da Instituição,Institucional,49,OrgGesInst,"Se desejar, indique suas percepções sobre a organização e gestão institucional na UFPR em geral ou em alguma situação específica."
 2037,648,Sustentabilidade Financeira,Institucional,55,SustFin,"Se desejar, indique suas percepções sobre a sustentabilidade financeira na UFPR em geral ou em alguma situação específica."
 1828,649,Complexo do Hospital de Clínicas (CHC-UFPR/Ebserh),Institucional,75,CHC,"Se desejar, indique suas percepções sobre as Políticas do Complexo do Hospital de Clínicas em seu papel como um hospital-escola."
-,,,,,,
-,Tipo_Perg,Grupo_de_Perguntas,,,,
-,MsãoPDI,Missão e Plano de Desenvolvimento Institucional,,,,
-,RsSc,Responsabilidade Social,,,,
-,PolPes,Políticas de Pessoal,,,,
-,OrgGesInst,Organização e Gestão da Instituição,,,,
-,SustFin,Sustentabilidade Financeira,,,,
-,CHC,Complexo do Hospital de Clínicas (CHC-UFPR/Ebserh),,,,
-,,,,,,
-,ID_QUESTIONARIO,QUESTIONARIO,,,,
-,644,Missão e Plano de Desenvolvimento Institucional,,,,
-,645,Responsabilidade Social,,,,
-,646,Políticas de Pessoal,,,,
-,647,Organização e Gestão da Instituição,,,,
-,648,Sustentabilidade Financeira,,,,
-,649,Complexo do Hospital de Clínicas (CHC-UFPR/Ebserh),,,,
