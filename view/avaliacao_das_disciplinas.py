@@ -62,17 +62,17 @@ def avaliacao_das_disciplinas_view():
                                       ('disciplina 1 -- Setor: exatas -- Curso: fisica','disciplina2 ','disciplina3', 'disciplina4'))
     
     df_disciplina = pd.DataFrame({
-    "RESPOSTA": ["Concordo", "Discordo", "Neutro"],
+    "RESPOSTA": ["Concordo", "Discordo", "Desconheço"],
     "CONTAGEM": [40, 10, 8]
     })
 
     df_setor = pd.DataFrame({
-        "RESPOSTA": ["Concordo", "Discordo", "Neutro"],
+        "RESPOSTA": ["Concordo", "Discordo", "Desconheço"],
         "CONTAGEM": [70, 20, 15]
     })
 
     df_curso = pd.DataFrame({
-        "RESPOSTA": ["Concordo", "Discordo", "Neutro"],
+        "RESPOSTA": ["Concordo", "Discordo", "Desconheço"],
         "CONTAGEM": [55, 12, 5]
     })
     col1, col2 = st.columns(2)
