@@ -190,7 +190,10 @@ def avaliacao_institucional_view():
 
     with col_graf2:
         st.subheader("Comparativo por Eixo")
-
+        st.write("")
+        st.write("")
+    
+        
         df_grouped = (
             df_filtered.groupby(['EIXO', 'RESPOSTA'])
             .size()
