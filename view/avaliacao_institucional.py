@@ -6,7 +6,6 @@ import numpy as np
 
 from services.AvaliacaoInstitucionalService import AvaliacaoInstitucionalService
 
-
 BORDER = 1
 COLOR_MAP = {
     'Concordo': '#2ecc71',
@@ -227,13 +226,9 @@ def avaliacao_institucional_view():
         
         st.plotly_chart(fig_bar, use_container_width=True)
 
-    eixos_disponiveis = df["EIXO"].unique()
-    eixo_sel = st.selectbox("Selecione o Eixo:", eixos_disponiveis)
-
-    dimensoes_disponiveis = df[df["EIXO"] == eixo_sel]["DIMENSAO"].unique()
+    dimensoes = ['Dimensão 2 - Ensino, Pesquisa e Extensão"']
     dim_sel = st.selectbox(
-        "Selecione a Dimensão para Análise Detalhada:",
-        dimensoes_disponiveis
+        "Selecione a Dimensão para Análise Detalhada:",dimensoes
     )
 
     df_filtered = df[df["DIMENSAO"] == dim_sel]
