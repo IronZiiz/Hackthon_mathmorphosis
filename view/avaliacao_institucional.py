@@ -61,12 +61,13 @@ def avaliacao_institucional_view():
         )
 
     df = AvaliacaoInstitucionalService().df_load_dados_institucional
-    st.set_page_config(
-        page_title="Resultados Avaliação Institucional - UFPR",
-        layout="wide"
-    )
+    
     
     st.title('Resultados Avaliação Institucional')
+    col1 ,_,_,_,_,_= st.columns(6)
+    with col1:
+        year_value = st.selectbox('Selecione o Ano', ('2025','2024'),
+                                index = 0)
 
     col1, col2, col3, col4 = st.columns(4)
     service = AvaliacaoInstitucionalService(
