@@ -123,13 +123,16 @@ def avaliacao_institucional_view():
             default=["Todos"],
             key="filtro_eixo"
         )
-        
+
+    if "Todos" in eixo_value or not eixo_value:
+        df_filtered = df.copy()
+    else:
+        df_filtered = df[df['EIXO'].isin(eixo_value)].sort_values(by='Ordem')
+
     with col2:
         # Filter all the questions in the selected axis
-        if "Todos" in eixo_value or not eixo_value:
-            opcoes_perguntas = ["Todos"] + sorted(df['PERGUNTA'].unique().tolist())
-        else:
-            opcoes_perguntas = ["Todos"] + sorted(df[df['EIXO'].isin(eixo_value)]['PERGUNTA'].unique().tolist())
+        perguntas_unicas = (df_filtered['Ordem'].astype(int).astype(str) + ' - ' + df_filtered['PERGUNTA']).unique().tolist()
+        opcoes_perguntas = ["Todos"] + sorted(perguntas_unicas, key=lambda x: int(x.split(' - ')[0]))
         
         perguntas_value = st.multiselect(
             "Perguntas",
@@ -142,12 +145,8 @@ def avaliacao_institucional_view():
         eixos_value=eixo_value,
         perguntas_value=perguntas_value
     )
-    st.markdown("---")
 
-    if "Todos" in eixo_value or not eixo_value:
-        df_filtered = df.copy()
-    else:
-        df_filtered = df[df['EIXO'].isin(eixo_value)]
+    st.markdown("---")    
 
     total_resp = len(df_filtered)
     if total_resp > 0:
@@ -185,19 +184,13 @@ def avaliacao_institucional_view():
             )
             
             st.plotly_chart(fig_donut, use_container_width=True)
-            st.caption(f"Total de respostas consideradas: {total_resp}")
+            st.caption(f"Total de respostas consideradas por pergunta: {total_resp}")
         else:
             st.warning("Sem dados para os filtros selecionados.")
 
     with col_graf2:
         st.subheader("Comparativo por Eixo")
-        
-        # Filter all the questions in the selected axis
-        if "Todos" in eixo_value or not eixo_value:
-            opcoes_perguntas = ["Todos"] + sorted(df['PERGUNTA'].unique().tolist())
-        else:
-            opcoes_perguntas = ["Todos"] + sorted(df[df['EIXO'].isin(eixo_value)]['PERGUNTA'].unique().tolist())
-            
+
         df_grouped = (
             df_filtered.groupby(['EIXO', 'RESPOSTA'])
             .size()
@@ -227,13 +220,14 @@ def avaliacao_institucional_view():
             xaxis_title="",
             yaxis_title="% das Respostas",
             legend_title="",
-            xaxis={'tickangle': -45}
+            xaxis={'tickangle': 0}
         )
         fig_bar.update_yaxes(range=[0, 100])
         
         st.plotly_chart(fig_bar, use_container_width=True)
 
-    dimensoes = ['Dimensão 2 - Ensino, Pesquisa e Extensão"']
+    dimensoes = df_filtered['DIMENSAO'].unique()
+    
     dim_sel = st.selectbox(
         "Selecione a Dimensão para Análise Detalhada:",dimensoes
     )
@@ -260,10 +254,32 @@ def avaliacao_institucional_view():
     discordo_list = stats_pct['Discordo'].tolist()
     discordo_neg_list = [-x for x in discordo_list]
 
+    # Chat GPT
+    # Função para quebrar texto em múltiplas linhas
+    def quebrar_texto(texto, max_chars=60):
+        if len(texto) <= max_chars:
+            return texto
+        palavras = texto.split()
+        linhas = []
+        linha_atual = ""
+        for palavra in palavras:
+            if len(linha_atual) + len(palavra) + 1 <= max_chars:
+                linha_atual += palavra + " "
+            else:
+                if linha_atual:
+                    linhas.append(linha_atual.strip())
+                linha_atual = palavra + " "
+        if linha_atual:
+            linhas.append(linha_atual.strip())
+        return "<br>".join(linhas)
+
+    # Aplicar quebra de texto nas perguntas
+    questions_formatted = [quebrar_texto(q) for q in questions]
+
     fig_div = go.Figure()
 
     fig_div.add_trace(go.Bar(
-        y=questions,
+        y=questions_formatted,
         x=discordo_neg_list,
         name='Discordo',
         orientation='h',
@@ -275,7 +291,7 @@ def avaliacao_institucional_view():
     ))
 
     fig_div.add_trace(go.Bar(
-        y=questions,
+        y=questions_formatted,
         x=concordo_list,
         name='Concordo',
         orientation='h',
@@ -293,7 +309,7 @@ def avaliacao_institucional_view():
         yaxis=dict(title=""),
         bargap=0.3,
         legend_title_text='Sentimento',
-        height=len(questions) * 50 + 150
+        height=len(questions) * 60 + 200
     )
 
     fig_div.add_vline(x=0, line_width=1, line_color="black")
