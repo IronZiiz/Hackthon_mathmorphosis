@@ -1,5 +1,6 @@
 import streamlit as st
 from streamlit_carousel import carousel
+import time 
 
 CARD_STYLE_BOXES  = """
     border:1px solid #ddd; 
@@ -51,6 +52,15 @@ def home_view():
         """,
         unsafe_allow_html=True
     )
+    feedback_value = st.feedback()
+    if feedback_value is not None:
+        msg = st.empty()
+        msg.success("Obrigado pelo feedback!")
+        time.sleep(1)
+        msg.empty()
+    else:
+        st.error("Você precisa deixar um feedback!")
+
     st.write("")  
     st.write("")  
     
@@ -71,7 +81,6 @@ def home_view():
         "text": ""
     },
     ])
-
 
 
     st.write("")  
@@ -321,8 +330,39 @@ def home_view():
         A avaliação institucional é coordenada pela CPA com periodicidade anual, resultando em um Relatório Anual de Avaliação protocolado no MEC até 31 de março do ano seguinte.
     </p>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True 
+    )
+    st.markdown(
+        """
+        <p style="
+            text-align:left;
+            max-width:750px;
+            margin:auto;
+            font-size:0.75rem;
+            color:#555;
+            opacity:0.7;
+            line-height:1;
+        ">
+            <span style="font-weight:700; opacity:1;">Fundamento Legal</span>""",unsafe_allow_html =True)
+
+    st.write("")
+    st.write("")
+
+    st.write("---")  # linha de separação
+
+    st.markdown(
+        """
+        <div style="
+            text-align:center;
+            padding:10px;
+            opacity:0.85;
+        ">
+            <h3 style="margin-bottom:5px;">Contato</h3>
+            <p style="margin:0;">Equipe Mathmorphosis</p>
+            <p style="margin:0;">📧 contato@mathmorphosis.ufpr.br</p>
+            <p style="margin:0;">🌐 www.mathmorphosis.com.br</p>
+        </div>
+        """,
+        unsafe_allow_html=True
 )
-
-
     
