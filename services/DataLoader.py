@@ -1,6 +1,7 @@
 import pandas as pd 
 
-PATH_DADOS_INSTITUCIONAL = ""
+PATH_TO_DIR = "../data/processed/"
+PATH_DADOS_INSTITUCIONAL = PATH_TO_DIR + "Institucional2025/processed_Institucional_2025.csv"
 PATH_DADOS_DISCIPLINAS = ""
 PATH_DADOS_CURSOS = ""
 
