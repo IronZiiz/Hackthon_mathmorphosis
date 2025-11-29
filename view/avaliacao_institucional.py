@@ -59,14 +59,17 @@ def avaliacao_institucional_view():
     df_ufpr = df[df['ANO'] == ano_sel]
 
     st.title(f'Resultados Avaliação Institucional')
-
+    service_avaliacao_institucional = AvaliacaoInstitucionalService(
+         eixos_value= None,
+         perguntas_value= None)
+    
     col1, col2, col3, col4 = st.columns(4)
-
+    pct_comparacao_ano_atual,qtd_respondentes_ano_passado =  service_avaliacao_institucional.total_respondentes_ano_passado()
     with col1:
         st.metric(label="Total Respondentes",
                           border=BORDER,
-                          value= 0,
-                          delta= f"30% Ano passado: 200 ", 
+                          value= service_avaliacao_institucional.total_respondentes_ano_atual(),
+                          delta= f"{pct_comparacao_ano_atual}% Ano passado: {qtd_respondentes_ano_passado} ", 
                           )
         
     with col2: 
@@ -109,9 +112,6 @@ def avaliacao_institucional_view():
          
     
          
-
-
-    
     
     col1, col2 = st.columns(2)
     color_map = {'Concordo': '#2ecc71', 'Discordo': '#e74c3c', 'Desconheço': '#95a5a6'}
