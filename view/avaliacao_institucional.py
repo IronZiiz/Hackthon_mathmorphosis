@@ -2,89 +2,120 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-
-import streamlit as st
-import pandas as pd
-import plotly.express as px
 import numpy as np
 
 from services.AvaliacaoInstitucionalService import AvaliacaoInstitucionalService
 
-# Constante de estilo
-BORDER = 1
-color_map = {'Concordo': '#2ecc71', 'Discordo': '#e74c3c', 'Desconheço': '#95a5a6'}
 
-@st.cache_data
-def load_data_eixos():
-    eixos_definidos = [
-        "1- Planejamento e Avaliação Institucional",
-        "2- Desenvolvimento Institucional",
-        "3- Políticas Acadêmicas",
-        "4- Políticas de Gestão",
-        "5- Infraestrutura Física"
-    ]
-    
-    data = []
-    for _ in range(1000):
-        eixo = np.random.choice(eixos_definidos)
-        
-        # Pesos diferentes para variar os dados (Ex: Infraestrutura tem mais reclamação)
-        if "Infraestrutura" in eixo:
-            weights = [0.50, 0.40, 0.10] # Mais discordo
-        elif "Acadêmicas" in eixo:
-            weights = [0.80, 0.10, 0.10] # Mais concordo
-        else:
-            weights = [0.65, 0.20, 0.15] # Padrão
-            
-        resp = np.random.choice(['Concordo', 'Discordo', 'Desconheço'], p=weights)
-        data.append([eixo, resp])
-        
-    return pd.DataFrame(data, columns=['EIXO', 'RESPOSTA'])
+BORDER = 1
+COLOR_MAP = {
+    'Concordo': '#2ecc71',
+    'Discordo': '#e74c3c',
+    'Desconheço': '#95a5a6'
+}
+
 
 def avaliacao_institucional_view():
-    st.set_page_config(page_title="Resultados Avaliação Institucional - UFPR", layout="wide")
-    
-    # Carrega dados
-    df = load_data_eixos()
+    @st.cache_data
+    def load_data_detalhado():
+        hierarquia = {
+            "Eixo 3 - Políticas Acadêmicas": {
+                "Dimensão 2 - Ensino, Pesquisa e Extensão": [
+                    "01 - O curso promove a interdisciplinaridade?",
+                    "02 - O curso possibilita formação plural?",
+                    "03 - O curso relaciona teoria com prática?",
+                    "06 - Há indissociabilidade ensino-pesquisa?",
+                ],
+                "Dimensão 9 - Política de Atendimento": [
+                    "18 - O atendimento pedagógico é suficiente?",
+                    "19 - O apoio à permanência gera resultados?",
+                ]
+            },
+            "Eixo 4 - Políticas de Gestão": {
+                "Dimensão 5 - Políticas de Pessoal": [
+                    "25 - O corpo docente é qualificado?",
+                    "26 - Os técnicos atendem bem as demandas?",
+                ],
+                "Dimensão 6 - Gestão da Instituição": [
+                    "12 - Os canais de comunicação são visíveis?",
+                    "13 - A imagem pública é bem acompanhada?",
+                ]
+            }
+        }
 
+        data = []
+        for _ in range(500):
+            eixo_key = np.random.choice(list(hierarquia.keys()))
+            dim_key = np.random.choice(list(hierarquia[eixo_key].keys()))
+            perg_key = np.random.choice(hierarquia[eixo_key][dim_key])
+            
+            resp = np.random.choice(
+                ['Concordo', 'Discordo', 'Desconheço'],
+                p=[0.6, 0.3, 0.1]
+            )
+            
+            data.append([eixo_key, dim_key, perg_key, resp])
+            
+        return pd.DataFrame(
+            data,
+            columns=['EIXO', 'DIMENSAO', 'PERGUNTA', 'RESPOSTA']
+        )
+
+    df = load_data_detalhado()
+    st.set_page_config(
+        page_title="Resultados Avaliação Institucional - UFPR",
+        layout="wide"
+    )
+    
     st.title('Resultados Avaliação Institucional')
 
-  
-  
     col1, col2, col3, col4 = st.columns(4)
-    service_avaliacao_institucional = AvaliacaoInstitucionalService(  
-                eixos_value = None,
-                 perguntas_value = None)
-    qtd_respondentes_ano_atual =service_avaliacao_institucional.total_respondentes_ano_atual()
-    pct_comparacao_ano_atual,qtd_respondentes_ano_passado =  service_avaliacao_institucional.total_respondentes_ano_passado()
+    service = AvaliacaoInstitucionalService(
+        eixos_value=None,
+        perguntas_value=None
+    )
+    qtd_respondentes_ano_atual = service.total_respondentes_ano_atual()
+    pct_comparacao, qtd_respondentes_ano_passado = (
+        service.total_respondentes_ano_passado()
+    )
+    
     with col1:
-        st.metric(label="Total Respondentes",
-                  border=BORDER,
-                  value=qtd_respondentes_ano_atual,
-                  delta=f"{pct_comparacao_ano_atual}% Ano passado: {qtd_respondentes_ano_passado}")
+        st.metric(
+            label="Total Respondentes",
+            border=BORDER,
+            value=qtd_respondentes_ano_atual,
+            delta=f"{pct_comparacao}% Ano passado: {qtd_respondentes_ano_passado}"
+        )
         
-    with col2: 
-        st.metric(label="Concordância",
-                  border=BORDER,
-                  value=f"10%",
-                  delta   = 1,
-                  delta_color="normal")
+    with col2:
+        st.metric(
+            label="Concordância",
+            border=BORDER,
+            value="10%",
+            delta=1,
+            delta_color="normal"
+        )
+        
     with col3:
-        st.metric(label="Discordância",
-                  border=BORDER,
-                  value=f"10%",
-                  delta = 2,
-                  delta_color="inverse") # Vermelho se aumentar
-    with col4: 
-        st.metric(label="Desconhecimento",
-                  border=BORDER,
-                  value=f"10%",
-                  delta =1,
-                  )
+        st.metric(
+            label="Discordância",
+            border=BORDER,
+            value="10%",
+            delta=2,
+            delta_color="inverse"
+        )
+        
+    with col4:
+        st.metric(
+            label="Desconhecimento",
+            border=BORDER,
+            value="10%",
+            delta=1
+        )
         
     col1, col2 = st.columns(2)
     
-    with col1: 
+    with col1:
         opcoes_eixo = ["Todos"] + list(df['EIXO'].unique())
         eixo_value = st.multiselect(
             "Eixo",
@@ -92,28 +123,27 @@ def avaliacao_institucional_view():
             default=["Todos"],
             key="filtro_eixo"
         )
+        
     with col2:
         opcoes_perguntas = ["Todos"]
-        perguntas_value= st.multiselect(
-                "Perguntas",
-                opcoes_perguntas,
-                default=["Todos"],
-                key="filtro_perguntas"
-            )
-    service_avaliacao_institucional = AvaliacaoInstitucionalService(  
-                eixos_value = eixo_value,
-                 perguntas_value = perguntas_value)
+        perguntas_value = st.multiselect(
+            "Perguntas",
+            opcoes_perguntas,
+            default=["Todos"],
+            key="filtro_perguntas"
+        )
+        
+    service = AvaliacaoInstitucionalService(
+        eixos_value=eixo_value,
+        perguntas_value=perguntas_value
+    )
     st.markdown("---")
-
 
     if "Todos" in eixo_value or not eixo_value:
         df_filtered = df.copy()
     else:
         df_filtered = df[df['EIXO'].isin(eixo_value)]
 
-    # ==========================================================================
-    # 3. CÁLCULO DAS MÉTRICAS (Dinâmico)
-    # ==========================================================================
     total_resp = len(df_filtered)
     if total_resp > 0:
         counts = df_filtered['RESPOSTA'].value_counts()
@@ -122,58 +152,58 @@ def avaliacao_institucional_view():
         desc_pct = (counts.get('Desconheço', 0) / total_resp) * 100
     else:
         conc_pct = disc_pct = desc_pct = 0
-    # ==========================================================================
-    # 5. VISUALIZAÇÕES (Rosquinha e Comparativo)
-    # ==========================================================================
     
     col_graf1, col_graf2 = st.columns(2)
     
-    # --- GRÁFICO 1: VISÃO GERAL (ROSQUINHA) ---
     with col_graf1:
         st.subheader("Distribuição Total (Seleção)")
         
         if total_resp > 0:
-            # Agrupa dados filtrados para o gráfico de pizza
             df_pizza = df_filtered['RESPOSTA'].value_counts().reset_index()
             df_pizza.columns = ['RESPOSTA', 'CONTAGEM']
             
             fig_donut = px.pie(
-                df_pizza, 
-                values='CONTAGEM', 
+                df_pizza,
+                values='CONTAGEM',
                 names='RESPOSTA',
-                hole=0.5, # Faz virar rosquinha
+                hole=0.5,
                 color='RESPOSTA',
-                color_discrete_map=color_map
+                color_discrete_map=COLOR_MAP
             )
-            fig_donut.update_traces(textposition='inside', textinfo='percent+label')
-            fig_donut.update_layout(showlegend=False, margin=dict(t=0, b=0, l=0, r=0))
+            fig_donut.update_traces(
+                textposition='inside',
+                textinfo='percent+label'
+            )
+            fig_donut.update_layout(
+                showlegend=False,
+                margin=dict(t=0, b=0, l=0, r=0)
+            )
             
             st.plotly_chart(fig_donut, use_container_width=True)
-            
-            # Legenda de apoio visual
             st.caption(f"Total de respostas consideradas: {total_resp}")
         else:
             st.warning("Sem dados para os filtros selecionados.")
 
-    # --- GRÁFICO 2: COMPARAÇÃO ENTRE EIXOS (BARRAS) ---
     with col_graf2:
         st.subheader("Comparativo por Eixo")
         
-        # Prepara dados agrupados por Eixo para comparar médias
-        # Se 'Todos' estiver selecionado, mostra todos os eixos disponíveis no DF original
-        # Se filtrado, mostra apenas os selecionados para comparação interna
         if "Todos" in eixo_value:
-            df_comp = df # Compara tudo com tudo
+            df_comp = df
         else:
-            df_comp = df_filtered # Compara apenas os selecionados
+            df_comp = df_filtered
             
-        # Agrupamento e cálculo de percentuais
-        df_grouped = df_comp.groupby(['EIXO', 'RESPOSTA']).size().reset_index(name='COUNT')
-        total_por_eixo = df_comp.groupby('EIXO').size().reset_index(name='TOTAL')
+        df_grouped = (
+            df_comp.groupby(['EIXO', 'RESPOSTA'])
+            .size()
+            .reset_index(name='COUNT')
+        )
+        total_por_eixo = (
+            df_comp.groupby('EIXO')
+            .size()
+            .reset_index(name='TOTAL')
+        )
         df_merged = pd.merge(df_grouped, total_por_eixo, on='EIXO')
         df_merged['PERCENT'] = (df_merged['COUNT'] / df_merged['TOTAL']) * 100
-        
-        # Ordenar eixos para visualização limpa
         df_merged = df_merged.sort_values('EIXO')
 
         fig_bar = px.bar(
@@ -181,8 +211,8 @@ def avaliacao_institucional_view():
             x="EIXO",
             y="PERCENT",
             color="RESPOSTA",
-            color_discrete_map=color_map,
-            barmode='stack', # Barras empilhadas para ver o total de 100%
+            color_discrete_map=COLOR_MAP,
+            barmode='stack',
             text_auto='.0f',
             height=400
         )
@@ -191,138 +221,91 @@ def avaliacao_institucional_view():
             xaxis_title="",
             yaxis_title="% das Respostas",
             legend_title="",
-            xaxis={'tickangle': -45} # Inclina o texto pois os nomes dos eixos são longos
+            xaxis={'tickangle': -45}
         )
-        # Força o eixo Y ir até 100%
         fig_bar.update_yaxes(range=[0, 100])
         
         st.plotly_chart(fig_bar, use_container_width=True)
 
-          
-    # with col1:
-        
-    
-    #     pergunta_sel = 'O curso promove a interdisciplinaridade?'
-    #     q_curso = df_curso[df_curso['PERGUNTA'] == pergunta_sel]
-    #     q_setor = df_setor[df_setor['PERGUNTA'] == pergunta_sel]
-    #     q_ufpr = df_ufpr[df_ufpr['PERGUNTA'] == pergunta_sel]
+    eixos_disponiveis = df["EIXO"].unique()
+    eixo_sel = st.selectbox("Selecione o Eixo:", eixos_disponiveis)
 
-    #     if not q_curso.empty:
-    #         stats_curso = calcular_frequencias(q_curso).assign(Escopo=f"Curso ({curso_sel})")
-    #         stats_setor = calcular_frequencias(q_setor).assign(Escopo=f"Setor ({setor_sel})")
-    #         stats_ufpr = calcular_frequencias(q_ufpr).assign(Escopo="UFPR (Geral)")
-    #         df_comparativo = pd.concat([stats_curso, stats_setor, stats_ufpr])
+    dimensoes_disponiveis = df[df["EIXO"] == eixo_sel]["DIMENSAO"].unique()
+    dim_sel = st.selectbox(
+        "Selecione a Dimensão para Análise Detalhada:",
+        dimensoes_disponiveis
+    )
 
-    #         fig_comp = px.bar(
-    #             df_comparativo,
-    #             x="Escopo",
-    #             y="Percentual",
-    #             color="RESPOSTA",
-    #             barmode="group",
-    #             color_discrete_map=color_map,
-    #             text_auto='.1f',
-    #             title=f"Comparativo geral das respostas"
-    #         )
+    df_filtered = df[df["DIMENSAO"] == dim_sel]
 
-    #         fig_comp.update_layout(yaxis_title="% Frequência Relativa")
-    #         st.plotly_chart(fig_comp, use_container_width=True)
-    # with col2: 
-    #     df_concordo = df[df['RESPOSTA'] == 'Concordo']
-    #     radar_curso = df_concordo[df_concordo['CURSO'] == curso_sel].groupby('DIMENSAO').size()
-    #     total_curso = df[df['CURSO'] == curso_sel].groupby('DIMENSAO').size()
-    #     score_curso = (radar_curso / total_curso * 100).fillna(0).reset_index(name='Score')
-    #     radar_setor = df_concordo[df_concordo['SETOR'] == setor_sel].groupby('DIMENSAO').size()
-    #     total_setor = df[df['SETOR'] == setor_sel].groupby('DIMENSAO').size()
-    #     score_setor = (radar_setor / total_setor * 100).fillna(0).reset_index(name='Score')
-    #     categories = score_curso['DIMENSAO'].tolist()
-    #     fig_radar = go.Figure()
+    grouped = (
+        df_filtered.groupby(['PERGUNTA', 'RESPOSTA'])
+        .size()
+        .unstack(fill_value=0)
+    )
 
-    #     fig_radar.add_trace(go.Scatterpolar(
-    #         r=score_curso['Score'],
-    #         theta=categories,
-    #         fill='toself',
-    #         name=f'Média Eixos selecionados',
-    #         line_color='#1f77b4'
-    #     ))
+    stats_pct = grouped.div(grouped.sum(axis=1), axis=0) * 100
 
-    #     fig_radar.add_trace(go.Scatterpolar(
-    #         r=score_setor['Score'],
-    #         theta=categories,
-    #         fill='toself',
-    #         name=f'Média Todos os eixos',
-    #         line_color='#ff7f0e',
-    #         opacity=0.5
-    #     ))
+    if 'Concordo' not in stats_pct.columns:
+        stats_pct['Concordo'] = 0.0
+    if 'Discordo' not in stats_pct.columns:
+        stats_pct['Discordo'] = 0.0
 
-    #     fig_radar.update_layout(
-    #         polar=dict(
-    #             radialaxis=dict(
-    #                 visible=True,
-    #                 range=[0, 100]
-    #             )),
-    #         showlegend=True,
-    #         title="Comparação concordância média dos eixos com eixos filtrado  "
-    #     )
-    #     # st.plotly_chart(fig_radar, use_container_width=True, key = 2)
-    
-    dimensao = ['Todas']
-    st.selectbox("Selecione a Dimensão para Análise Detalhada:", dimensao )
-    # dim_sel = st.selectbox("Selecione o eixo:", df["EIXO"].unique())
+    stats_pct = stats_pct.sort_values('Concordo', ascending=True)
 
-    # df_dim = df[df["EIXO"] == dim_sel]
+    questions = stats_pct.index.tolist()
+    concordo_list = stats_pct['Concordo'].tolist()
+    discordo_list = stats_pct['Discordo'].tolist()
+    discordo_neg_list = [-x for x in discordo_list]
 
-    # stats = df_dim["RESPOSTA"].value_counts(normalize=True) * 100
+    fig_div = go.Figure()
 
-    # concordo = stats.get("Concordo", 0)
-    # discordo = stats.get("Discordo", 0)
-    # desconheco = stats.get("Desconheço", 0)
+    fig_div.add_trace(go.Bar(
+        y=questions,
+        x=discordo_neg_list,
+        name='Discordo',
+        orientation='h',
+        marker_color='#e74c3c',
+        text=[f"{x:.1f}%" for x in discordo_list],
+        textposition='auto',
+        hoverinfo='text+y',
+        hovertext=[f"Discordância: {x:.1f}%" for x in discordo_list]
+    ))
 
-    # questions = [dim_sel]
-    # concordo_list = [concordo]
-    # discordo_list = [discordo]
-    # discordo_neg_list = [-discordo]
+    fig_div.add_trace(go.Bar(
+        y=questions,
+        x=concordo_list,
+        name='Concordo',
+        orientation='h',
+        marker_color='#2ecc71',
+        text=[f"{x:.1f}%" for x in concordo_list],
+        textposition='auto',
+        hoverinfo='text+y',
+        hovertext=[f"Concordância: {x:.1f}%" for x in concordo_list]
+    ))
 
-    # fig_div = go.Figure()
+    fig_div.update_layout(
+        barmode='relative',
+        title=f"Saldo de Opinião por Questão: {dim_sel.split('-')[0]}",
+        xaxis_title="% Rejeição <---> % Aprovação",
+        yaxis=dict(title=""),
+        bargap=0.3,
+        legend_title_text='Sentimento',
+        height=len(questions) * 50 + 150
+    )
 
-    # fig_div.add_trace(go.Bar(
-    #     y=questions, x=discordo_neg_list,
-    #     name='Discordo', orientation='h',
-    #     marker_color='#e74c3c',
-    #     text=[f"{x:.1f}%" for x in discordo_list], textposition='auto'
-    # ))
+    fig_div.add_vline(x=0, line_width=1, line_color="black")
 
-    # fig_div.add_trace(go.Bar(
-    #     y=questions, x=concordo_list,
-    #     name='Concordo', orientation='h',
-    #     marker_color='#2ecc71',
-    #     text=[f"{x:.1f}%" for x in concordo_list], textposition='auto'
-    # ))
-
-    # fig_div.update_layout(
-    #     barmode='relative',
-    #     title=f"Saldo de Opinião: {dim_sel}",
-    #     xaxis_title="% Rejeição <---> % Aprovação",
-    #     yaxis=dict(autorange="reversed"),
-    #     bargap=0.3,
-    #     legend_title_text='Sentimento'
-    # )
-
-    # fig_div.add_vline(x=0, line_width=2, line_dash="dash", line_color="black")
-
-    # st.plotly_chart(fig_div, use_container_width=True)
+    st.plotly_chart(fig_div, use_container_width=True)
 
     with st.expander("Ver dados brutos (Frequências Absolutas)"):
-                    st.dataframe()
-                    message = "Lorem ipsum.\nStreamlit is cool."
-                    st.download_button(
-                            label="Download Dados brutos",
-                            data=message,
-                            file_name="message.txt",
-                            on_click="ignore",
-                            type="primary",
-                            icon=":material/download:",
+        st.dataframe()
+        message = "Lorem ipsum.\nStreamlit is cool."
+        st.download_button(
+            label="Download Dados brutos",
+            data=message,
+            file_name="message.txt",
+            on_click="ignore",
+            type="primary",
+            icon=":material/download:"
         )
-    
-    
-        
-    
