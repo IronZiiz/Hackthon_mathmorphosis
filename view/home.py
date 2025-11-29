@@ -351,7 +351,7 @@ def home_view():
         ">
             <h3 style="margin-bottom:5px;">Contato</h3>
             <p style="margin:0;">Equipe Mathmorphosis</p>
-            <p style="margin:0;">📧 contato@mathmorphosis.ufpr.br</p>
+            <p style="margin:0;">📧 mathmorphosisej@gmail.com</p>
             <p style="margin:0;">🌐 www.mathmorphosis.com.br</p>
         </div>
         """,

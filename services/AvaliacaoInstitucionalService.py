@@ -2,17 +2,23 @@ import pandas as pd
 from services.DataLoader  import DataLoader
 
 class AvaliacaoInstitucionalService(DataLoader): 
-    def __init__(self, 
-                 eixos_value = None,
-                 perguntas_value = None,
-                 ):
-        #self.df = DataLoader.load_dados_institucional()
+    def __init__(
+        self, 
+        eixos_value=None,
+        perguntas_value=None,
+        df_load_dados_institucional=None,
+    ):
+        if df_load_dados_institucional is None:
+            df_load_dados_institucional = DataLoader.load_dados_institucional()
+
+        self.df_load_dados_institucional = df_load_dados_institucional
         self.eixos_value = eixos_value
         self.perguntas_value = perguntas_value
 
 
     def total_respondentes_ano_atual(self): 
-        # self.df = DataLoader.load_dados_institucional()
+        df = self.df_load_dados_institucional
+        df 
         qtd_respondentes_atual = 2000
         return qtd_respondentes_atual
     
