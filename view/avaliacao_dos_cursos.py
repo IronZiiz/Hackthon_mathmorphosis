@@ -2,12 +2,16 @@ import streamlit as st
 import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
+
+from services.AvalicaoDosCursosService import *
 BORDER = 1
 COLOR_MAP = {
     'Concordo': '#2ecc71',
     'Discordo': '#e74c3c',
     'Desconheço': '#95a5a6'
 }
+
+service = AvaliacaoDosCursosService()
 
 def avaliacao_dos_cursos_view():
 
@@ -25,7 +29,7 @@ def avaliacao_dos_cursos_view():
         st.metric(
             label="Total Respondentes",
             border=BORDER,
-            value=1,
+            value=f"{service.get_total_respondentes(path='data/processed/Cursos2025/Cursos2025_limpo.csv')}",
             delta=f"% Ano passado: "
         )
         
@@ -33,28 +37,25 @@ def avaliacao_dos_cursos_view():
         st.metric(
             label="Concordância",
             border=BORDER,
-            value=f"%",
-            delta=1,
-            delta_color="normal"
+            value=f"{service.get_concordancia(path='data/processed/Cursos2025/Cursos2025_limpo.csv'):.2f}%",
+            delta=1
         )
         
     with col3:
         st.metric(
             label="Discordância",
             border=BORDER,
-            value=f"%",
-            delta=2,
-            delta_color="inverse"
+            value=f"{service.get_discordancia(path='data/processed/Cursos2025/Cursos2025_limpo.csv'):.2f}%",
+            delta=2
         )
         
     with col4:
         st.metric(
             label="Desconhecimento",
             border=BORDER,
-            value=f"%",
+            value=f"{service.get_desconhecimento(path='data/processed/Cursos2025/Cursos2025_limpo.csv'):.2f}%",
             delta=1
-        )
-    
+        )    
     curso_value = st.selectbox("Pesquise a curso de seu interesse",
                                       ('curso 1 -- Setor: exatas ','curso2 -- Setor:tec ','disciplina3', 'disciplina4'), key = "curso_value")
     

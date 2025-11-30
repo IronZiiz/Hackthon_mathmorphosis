@@ -6,7 +6,7 @@ PATH_DADOS_DISCIPLINAS = ""
 PATH_DADOS_CURSOS = ""
 
 class DataLoader:
-    def __init__(): 
+    def __init__(self): 
         pass 
 
     @staticmethod
