@@ -1,10 +1,10 @@
 Tipo_Perg,Grupo_de_Perguntas,DIMENSAO,EIXO
-RsSc,Responsabilidade Social,3,NaN
+RsSc,Responsabilidade Social,3,2
 PlAc,Políticas Acadêmicas,NaN,3
-CiEx,Comunicação Interna e Externa,4,NaN
-AsEs,Assistência Estudantil,9,NaN
+CiEx,Comunicação Interna e Externa,4,3
+AsEs,Assistência Estudantil,9,3
 UgCa,Unidades Gestoras e Considerações Adicionais,NaN,6
-DsAO,Abordagem e organização da disciplina,1,NaN
-AtPM,Atuação do Professor e do Monitor,9,NaN
-AAvE,Autoavaliação do estudante e considerações adicionais,NaN,7
-AvPDSPF,Avaliação da percepção discente sobre o processo formativo,NaN,7
+DsAO,Abordagem e organização da disciplina,1,2
+AtPM,Atuação do Professor e do Monitor,9,3
+AAvE,Autoavaliação do estudante e considerações adicionais,8,1
+AvPDSPF,Avaliação da percepção discente sobre o processo formativo,8,1
