@@ -10,6 +10,7 @@ class AvaliacaoInstitucionalService(DataLoader):
         self, 
         eixos_value=None,
         perguntas_value=None,
+        dimensao_value = None,
         df_load_dados_institucional=None,
     ):
         if df_load_dados_institucional is None:
@@ -18,6 +19,7 @@ class AvaliacaoInstitucionalService(DataLoader):
         self.df_load_dados_institucional = df_load_dados_institucional
         self.eixos_value = eixos_value
         self.perguntas_value = perguntas_value
+        self.dimensao_value = dimensao_value
 
     def filtrar_dados_institucionais(self):
         df = self.df_load_dados_institucional.copy()
@@ -284,6 +286,90 @@ class AvaliacaoInstitucionalService(DataLoader):
 
         return fig_donut
 
+    def grafico_saldo_opiniao_dimensao(self):
+        df = self.df_load_dados_institucional.copy()
+        dim_sel = self.dimensao_value
 
-    
-    
+        df_filtered = df[df["DIMENSAO"] == dim_sel]
+
+        grouped = (
+            df_filtered.groupby(['PERGUNTA', 'RESPOSTA'])
+            .size()
+            .unstack(fill_value=0)
+        )
+
+        stats_pct = grouped.div(grouped.sum(axis=1), axis=0) * 100
+
+        if 'Concordo' not in stats_pct.columns:
+            stats_pct['Concordo'] = 0.0
+        if 'Discordo' not in stats_pct.columns:
+            stats_pct['Discordo'] = 0.0
+
+        stats_pct = stats_pct.sort_values('Concordo', ascending=True)
+
+        questions = stats_pct.index.tolist()
+        concordo_list = stats_pct['Concordo'].tolist()
+        discordo_list = stats_pct['Discordo'].tolist()
+        discordo_neg_list = [-x for x in discordo_list]
+
+        def quebrar_texto(texto, max_chars=60):
+                if len(texto) <= max_chars:
+                    return texto
+                palavras = texto.split()
+                linhas = []
+                linha_atual = ""
+                for palavra in palavras:
+                    if len(linha_atual) + len(palavra) + 1 <= max_chars:
+                        linha_atual += palavra + " "
+                    else:
+                        linhas.append(linha_atual.strip())
+                        linha_atual = palavra + " "
+                if linha_atual:
+                    linhas.append(linha_atual.strip())
+                return "<br>".join(linhas)
+
+        questions_formatted = [quebrar_texto(q) for q in questions]
+
+        fig_div = go.Figure()
+
+        fig_div.add_trace(go.Bar(
+            y=questions_formatted,
+            x=discordo_neg_list,
+            name='Discordo',
+            orientation='h',
+            marker_color='#e74c3c',
+            text=[f"{x:.1f}%" for x in discordo_list],
+            textposition='auto',
+            hoverinfo='text+y',
+            hovertext=[f"Discordância: {x:.1f}%" for x in discordo_list]
+        ))
+
+        fig_div.add_trace(go.Bar(
+            y=questions_formatted,
+            x=concordo_list,
+            name='Concordo',
+            orientation='h',
+            marker_color='#2ecc71',
+            text=[f"{x:.1f}%" for x in concordo_list],
+            textposition='auto',
+            hoverinfo='text+y',
+            hovertext=[f"Concordância: {x:.1f}%" for x in concordo_list]
+        ))
+
+        fig_div.update_layout(
+            barmode='relative',
+            title=f"Saldo de Opinião por Questão: {dim_sel.split('-')[0]}",
+            xaxis_title="% Rejeição <---> % Aprovação",
+            yaxis=dict(title=""),
+            bargap=0.3,
+            legend_title_text='Sentimento',
+            height=len(questions) * 60 + 200
+        )
+
+        fig_div.add_vline(x=0, line_width=1, line_color="black")
+
+        return fig_div
+
+
+        
+        

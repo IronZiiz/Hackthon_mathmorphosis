@@ -147,17 +147,8 @@ def avaliacao_institucional_view():
     )
 
     st.markdown("---")
-    st.subheader('Distribuição de respostas filtradas por Eixo')
+    st.subheader('Distribuição de respostas')
 
-
-    total_resp = len(df_filtered)
-    if total_resp > 0:
-        counts = df_filtered['RESPOSTA'].value_counts()
-        conc_pct = (counts.get('Concordo', 0) / total_resp) * 100
-        disc_pct = (counts.get('Discordo', 0) / total_resp) * 100
-        desc_pct = (counts.get('Desconheço', 0) / total_resp) * 100
-    else:
-        conc_pct = disc_pct = desc_pct = 0
     
     col_graf1, col_graf2 = st.columns(2)
     
@@ -186,96 +177,22 @@ def avaliacao_institucional_view():
     with col2:
         st.plotly_chart(service.grafico_donut_top10(),use_container_width=True)
 
-        
-    dimensoes = df_filtered['DIMENSAO'].unique()
     
+    st.markdown("---")
+    st.subheader('Analise detalhada das perguntas')
+
+    lista_dimensoes = df_filtered['DIMENSAO'].unique()
     dim_sel = st.selectbox(
-        "Selecione a Dimensão para Análise Detalhada:",dimensoes
+        "Selecione a Dimensão para Análise Detalhada:",lista_dimensoes
+    )
+    service = AvaliacaoInstitucionalService(
+        eixos_value=eixo_value,
+        perguntas_value=perguntas_value,
+        dimensao_value=dim_sel
     )
 
-    df_filtered = df[df["DIMENSAO"] == dim_sel]
 
-    grouped = (
-        df_filtered.groupby(['PERGUNTA', 'RESPOSTA'])
-        .size()
-        .unstack(fill_value=0)
-    )
-
-    stats_pct = grouped.div(grouped.sum(axis=1), axis=0) * 100
-
-    if 'Concordo' not in stats_pct.columns:
-        stats_pct['Concordo'] = 0.0
-    if 'Discordo' not in stats_pct.columns:
-        stats_pct['Discordo'] = 0.0
-
-    stats_pct = stats_pct.sort_values('Concordo', ascending=True)
-
-    questions = stats_pct.index.tolist()
-    concordo_list = stats_pct['Concordo'].tolist()
-    discordo_list = stats_pct['Discordo'].tolist()
-    discordo_neg_list = [-x for x in discordo_list]
-
-    # Chat GPT
-    # Função para quebrar texto em múltiplas linhas
-    def quebrar_texto(texto, max_chars=60):
-        if len(texto) <= max_chars:
-            return texto
-        palavras = texto.split()
-        linhas = []
-        linha_atual = ""
-        for palavra in palavras:
-            if len(linha_atual) + len(palavra) + 1 <= max_chars:
-                linha_atual += palavra + " "
-            else:
-                if linha_atual:
-                    linhas.append(linha_atual.strip())
-                linha_atual = palavra + " "
-        if linha_atual:
-            linhas.append(linha_atual.strip())
-        return "<br>".join(linhas)
-
-    # Aplicar quebra de texto nas perguntas
-    questions_formatted = [quebrar_texto(q) for q in questions]
-
-    fig_div = go.Figure()
-
-    fig_div.add_trace(go.Bar(
-        y=questions_formatted,
-        x=discordo_neg_list,
-        name='Discordo',
-        orientation='h',
-        marker_color='#e74c3c',
-        text=[f"{x:.1f}%" for x in discordo_list],
-        textposition='auto',
-        hoverinfo='text+y',
-        hovertext=[f"Discordância: {x:.1f}%" for x in discordo_list]
-    ))
-
-    fig_div.add_trace(go.Bar(
-        y=questions_formatted,
-        x=concordo_list,
-        name='Concordo',
-        orientation='h',
-        marker_color='#2ecc71',
-        text=[f"{x:.1f}%" for x in concordo_list],
-        textposition='auto',
-        hoverinfo='text+y',
-        hovertext=[f"Concordância: {x:.1f}%" for x in concordo_list]
-    ))
-
-    fig_div.update_layout(
-        barmode='relative',
-        title=f"Saldo de Opinião por Questão: {dim_sel.split('-')[0]}",
-        xaxis_title="% Rejeição <---> % Aprovação",
-        yaxis=dict(title=""),
-        bargap=0.3,
-        legend_title_text='Sentimento',
-        height=len(questions) * 60 + 200
-    )
-
-    fig_div.add_vline(x=0, line_width=1, line_color="black")
-
-    st.plotly_chart(fig_div, use_container_width=True)
+    st.plotly_chart(service.grafico_saldo_opiniao_dimensao(), use_container_width=True)
 
     with st.expander("Ver dados brutos (Frequências Absolutas) (TEMPORÁRIO)"):
         st.dataframe(df) # Temp
