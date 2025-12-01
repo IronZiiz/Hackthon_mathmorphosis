@@ -44,32 +44,19 @@ def home_view():
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        """
-        <p style="
-            text-align:center;
-            max-width:750px;
-            margin:auto;
-            font-size:1.1rem;
-            color:#555;
-        ">
-            Ferramenta interativa desenvolvida pela Equipe Mathmorphosis para visualizar os resultados das pesquisas 
-            realizadas junto a alunos e servidores da Universidade Federal do Paraná.
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
-
-    st.write("")  
-    st.write("")  
     st.markdown("""
     <style>
+    .carousel-item {   
+        max-height: 90vh !important; 
+        height: auto !important;     
+        width: 100% !important;
+    }
     .carousel-item img {
         object-fit: contain !important;
-        width: 100% !important;
-        height: auto !important;
+        width: 100% !important; 
+        height: auto !important;         
         max-height: 90vh !important;
-        background-color: black; 
+        background-color: black;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -84,7 +71,6 @@ def home_view():
         "title": "",
         "text": ""
     },
-   
     {
         "img": "data/imgs/4.png",
         "title": "",
@@ -95,10 +81,7 @@ def home_view():
         "title": "",
         "text": ""
     }
-
-    ]
-    )
-
+    ])
 
     st.write("")  
     st.write("")  
