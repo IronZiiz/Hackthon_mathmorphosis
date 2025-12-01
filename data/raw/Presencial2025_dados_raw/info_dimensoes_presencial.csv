@@ -1,9 +1,9 @@
 Tipo_Perg,Grupo_de_Perguntas,DIMENSAO,EIXO
 RsSc,Responsabilidade Social,3,2
-PlAc,Políticas Acadêmicas,NaN,3
+PlAc,Políticas Acadêmicas,0,3
 CiEx,Comunicação Interna e Externa,4,3
 AsEs,Assistência Estudantil,9,3
-UgCa,Unidades Gestoras e Considerações Adicionais,NaN,6
+UgCa,Unidades Gestoras e Considerações Adicionais,-1,6
 DsAO,Abordagem e organização da disciplina,1,2
 AtPM,Atuação do Professor e do Monitor,9,3
 AAvE,Autoavaliação do estudante e considerações adicionais,8,1
