@@ -3,7 +3,8 @@ import plotly.express as px
 import pandas as pd
 import plotly.graph_objects as go
 
-
+from services.AvaliacaoDasDisciplinasService import AvaliacaoDasDisciplinasService
+ 
 BORDER = 1
 COLOR_MAP = {
     'Concordo': '#2ecc71',
@@ -12,7 +13,7 @@ COLOR_MAP = {
 }
 
 def avaliacao_das_disciplinas_view():
-
+    
     
     st.title('Resultados Avaliação Disciplinas')
 
@@ -26,13 +27,16 @@ def avaliacao_das_disciplinas_view():
                                              ('Presencial','EAD'), 
                                              index = 0, key = "tipo_disciplina_value"
                                              )
-        
+        tipo_disciplina_value = str(tipo_disciplina_value)
+
+    service = AvaliacaoDasDisciplinasService(tipo_disciplina_value=tipo_disciplina_value)
+
     col1,col2,col3, col4 = st.columns(4)
     with col1:
         st.metric(
             label="Total Respondentes",
             border=BORDER,
-            value=1,
+            value=service.get_total_respondentes(),
             delta=f"% Ano passado: "
         )
         

@@ -21,7 +21,7 @@ class DataLoader:
         return df
     
     @staticmethod
-    def load_dados_disciplinas_presencial(path: str = PATH_DADOS_DISCIPLINAS_EAD) -> pd.DataFrame:
+    def load_dados_disciplinas_EAD(path: str = PATH_DADOS_DISCIPLINAS_EAD) -> pd.DataFrame:
         df = pd.read_csv(path)
         return df
     
