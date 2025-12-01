@@ -12,18 +12,15 @@ COLOR_MAP = {
     'Desconheço': '#95a5a6'
 }
 
-service = AvaliacaoDosCursosService()
 
 def avaliacao_dos_cursos_view():
-
+    service = AvaliacaoDosCursosService()
     st.title("Resultados Avaliação dos Cursos")
 
     col1,_,_,_,_,_= st.columns(6)
     with col1:
         year_value = st.selectbox('Selecione o Ano/Período',('2025','2024'), 
-                                                             index = 0,key = "year_value_cursos")
-        
-    st.header('Metricas de todos os Cursos')
+                                                             index = 1,key = "year_value_cursos")
     col1,col2,col3, col4 = st.columns(4)
 
     with col1:
@@ -57,35 +54,38 @@ def avaliacao_dos_cursos_view():
             value=f"{service.get_desconhecimento():.2f}%",
             delta=1
         )    
-    curso_value = st.selectbox("Pesquise a curso de seu interesse",
-                                      ('curso 1 -- Setor: exatas ','curso2 -- Setor:tec ','disciplina3', 'disciplina4'), key = "curso_value")
+    select_box_value_curso_setor = st.selectbox(
+        "Pesquise o curso de seu interesse",
+        service.formatacao_curso_setor(),
+        key="curso_value" 
+        )
     
-    df_setor = pd.DataFrame({
-        "RESPOSTA": ["Concordo", "Discordo", "Neutro"],
-        "CONTAGEM": [70, 20, 15]
-    })
+    if select_box_value_curso_setor == "Todos os cursos":
+        curso_value = "Todos"
+        setor_value = "Todos"
 
-    df_curso = pd.DataFrame({
-        "RESPOSTA": ["Concordo", "Discordo", "Neutro"],
-        "CONTAGEM": [55, 12, 5]
-    })
+    elif " - Setor: " in select_box_value_curso_setor:
+        curso_value, setor_value = (
+            select_box_value_curso_setor
+            .replace("Curso: ", "")
+            .split(" - Setor: ")
+        )
+
+    else:
+        curso_value = select_box_value_curso_setor
+        setor_value = ""
+
+    service = AvaliacaoDosCursosService(
+        curso_value=curso_value,
+        setor_value=setor_value)
+    
 
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader("Distribuição total (colocar nome do curso)")
-        fig = px.pie(
-            df_curso,
-            values="CONTAGEM",
-            names="RESPOSTA",
-            hole=0.5,
-            color="RESPOSTA",
-            color_discrete_map=COLOR_MAP
-        )
-        fig.update_traces(textposition="inside", textinfo="percent+label")
-        fig.update_layout(showlegend=False, margin=dict(t=0,b=0,l=0,r=0))
-        st.plotly_chart(fig, use_container_width=True, key = 'plot_pie_curso')
+        total_resp, fig_donut = service.grafico_distribuicao_donut()
+        st.plotly_chart(fig_donut, use_container_width=True, key = 'plot_pie_curso')
+
     with col2:
-        st.subheader("Comparativo por Eixo (Sera um numero fixo)")
         st.write("")
         st.write("")
         df_merged = pd.DataFrame({
