@@ -29,7 +29,8 @@ def avaliacao_das_disciplinas_view():
                                              )
         tipo_disciplina_value = str(tipo_disciplina_value)
 
-    service = AvaliacaoDasDisciplinasService(tipo_disciplina_value=tipo_disciplina_value)
+    service = AvaliacaoDasDisciplinasService(
+        tipo_disciplina_value=tipo_disciplina_value)
 
     col1,col2,col3, col4 = st.columns(4)
     with col1:
@@ -66,9 +67,27 @@ def avaliacao_das_disciplinas_view():
             delta=1
         )
     
-    disciplina_value = st.selectbox("Pesquise a disciplina de seu interesse",
-                                      ('disciplina 1 -- Setor: exatas -- Curso: fisica','disciplina2 ','disciplina3', 'disciplina4'))
+    select_box_value_disciplina_curso_setor = st.selectbox("Pesquise a disciplina de seu interesse",
+                                   service.formatacao_disciplina_curso_setor())
     
+    select_box_value_disciplina_curso_setor = str(select_box_value_disciplina_curso_setor)
+    if select_box_value_disciplina_curso_setor == "Todas as disciplinas":
+        disciplina_value = "Todas"
+        curso_value = "Todas"
+        setor_value = "Todas"
+    else:
+        partes = select_box_value_disciplina_curso_setor.split(" - ")
+        disciplina_value = partes[0].replace("Disciplina:", "").strip()
+        curso_value = partes[1].replace("Curso:", "").strip()
+        setor_value = partes[2].replace("Setor:", "").strip()
+        
+    service = AvaliacaoDasDisciplinasService(
+        tipo_disciplina_value=tipo_disciplina_value,
+        disciplina_value= disciplina_value,
+        curso_value= curso_value,
+        setor_value= setor_value)
+
+    st.dataframe(service.df_filtrado_pela_disciplina_curso_setor())
     df_disciplina = pd.DataFrame({
     "RESPOSTA": ["Concordo", "Discordo", "Desconheço"],
     "CONTAGEM": [40, 10, 8]

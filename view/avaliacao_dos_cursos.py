@@ -77,7 +77,9 @@ def avaliacao_dos_cursos_view():
 
     service = AvaliacaoDosCursosService(
         curso_value=curso_value,
-        setor_value=setor_value)
+        setor_value=setor_value,
+        
+        )
     
     st.subheader('Distribuição de respostas')
 

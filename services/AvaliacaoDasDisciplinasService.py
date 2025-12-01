@@ -10,6 +10,8 @@ class AvaliacaoDasDisciplinasService(DataLoader):
                 df_load_dados_avaliacao_disciplinas_presencial = None,
                 df_load_dados_avaliacao_disciplinas_EAD = None, 
                 disciplina_value = None,
+                curso_value = None,
+                setor_value = None,
                 dimensao_value = None,
                 tipo_disciplina_value = None,
                  ):
@@ -24,6 +26,8 @@ class AvaliacaoDasDisciplinasService(DataLoader):
         self.df_presencial = df_load_dados_avaliacao_disciplinas_presencial
         self.df_EAD = df_load_dados_avaliacao_disciplinas_EAD
         self.disciplina_value = disciplina_value
+        self.curso_value = curso_value 
+        self.setor_value = setor_value
         self.dimensao_value = dimensao_value 
         self.tipo_disciplina_value = tipo_disciplina_value
 
@@ -65,6 +69,44 @@ class AvaliacaoDasDisciplinasService(DataLoader):
 
         return (discordancia / total ) * 100
     
+    def formatacao_disciplina_curso_setor(self) -> list:
+        df = self.df_disciplinas().copy()
+
+        # Remove espaços extras em todas as colunas relevantes
+        for col in ["NOME_DISCIPLINA", "CURSO", "SETOR_CURSO"]:
+            df[col] = df[col].astype(str).str.strip()
+
+        df = df[['NOME_DISCIPLINA','CURSO','SETOR_CURSO']].drop_duplicates()
+
+        opcoes = [
+            f"Disciplina:{row.NOME_DISCIPLINA} - Curso: {row.CURSO} - Setor: {row.SETOR_CURSO}"
+            for row in df.itertuples()
+        ]
+
+        return ["Todas as disciplinas"] + sorted(opcoes)
+    
+    def df_filtrado_pela_disciplina_curso_setor(self) -> pd.DataFrame:
+        df = self.df_disciplinas().copy()
+
+        for col in ["NOME_DISCIPLINA", "CURSO", "SETOR_CURSO"]:
+            df[col] = df[col].astype(str).str.strip()
+
+        filtros = {
+            "NOME_DISCIPLINA": self.disciplina_value,
+            "CURSO": self.curso_value,
+            "SETOR_CURSO": self.setor_value,
+        }
+
+        for coluna, valor in filtros.items():
+            if self.disciplina_value != "Todas":
+                df = df[df[coluna] == valor]
+
+        return df
+    
+    def grafico_distribuicao_donut(self):
+        df = self.df_filtrado_pela_disciplina()
+        fig = 11
+        return fig
 
         
     
