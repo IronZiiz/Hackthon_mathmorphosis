@@ -16,13 +16,17 @@ def avaliacao_das_disciplinas_view():
     
     st.title('Resultados Avaliação Disciplinas')
 
-    col1,_,_,_,_,_= st.columns(6)
+    col1,col2,_,_,_,_= st.columns(6)
     with col1:
         year_value = st.selectbox('Selecione o Ano/Período', 
                                 ('2025/2','2025/1','2024/2', '2024/1'),
                                 index = 0, key = "year_value_disciplina")
+    with col2: 
+        tipo_disciplina_value = st.selectbox('Presencial/EAD', 
+                                             ('Presencial','EAD'), 
+                                             index = 0, key = "tipo_disciplina_value"
+                                             )
         
-    st.header('Metricas de todas disciplinas')
     col1,col2,col3, col4 = st.columns(4)
     with col1:
         st.metric(
