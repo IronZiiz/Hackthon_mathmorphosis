@@ -197,7 +197,8 @@ class AvaliacaoInstitucionalService(DataLoader):
 
     
     def preparar_dados_unidade_gestora(self):
-        df = self.df_load_dados_institucional[['ID_PESQUISA', 'UNIDADE GESTORA']]
+        df = self.filtrar_dados_institucionais()
+        df = df[['ID_PESQUISA', 'UNIDADE GESTORA']]
         df = df.dropna(subset=['UNIDADE GESTORA'])
 
         dataframe_fig = (

@@ -172,7 +172,6 @@ class AvaliacaoDosCursosService(DataLoader):
         return fig_bar
     
     def grafico_radar_setor_curso(self): 
-        
         return fig
 
     
