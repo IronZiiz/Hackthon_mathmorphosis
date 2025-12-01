@@ -79,8 +79,10 @@ def avaliacao_dos_cursos_view():
         curso_value=curso_value,
         setor_value=setor_value)
     
+    st.subheader('Distribuição de respostas')
 
     col1, col2 = st.columns(2)
+
     with col1:
         total_resp, fig_donut = service.grafico_distribuicao_donut()
         st.plotly_chart(fig_donut, use_container_width=True, key = 'plot_pie_curso')

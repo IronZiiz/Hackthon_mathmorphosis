@@ -2,6 +2,9 @@ import streamlit as st
 from streamlit_carousel import carousel
 import time 
 
+COLOR_UFPR_BLUE = '#00548e'
+COLOR_UFPR_BLACK ='#231F20'
+
 CARD_STYLE_BOXES  = """
     border:1px solid #ddd; 
     border-radius:12px; 
@@ -25,13 +28,15 @@ CARD_STYLE_CARDS = """
     align-items:center;
     gap:20px;
 """
+
+
 def home_view():
 
     st.markdown(
-        """
+        f"""
         <h1 style="text-align:center; font-size:3.4rem; font-weight:700;">
-            Visualização dos Resultados da 
-            <span style="color:#2563eb;">Avaliação</span> da UFPR
+            <span style="color:{COLOR_UFPR_BLACK}">Visualização dos Resultados da</span>
+            <span style="color:{COLOR_UFPR_BLUE}">Avaliação</span> da UFPR
         </h1>
         """,
         unsafe_allow_html=True
@@ -98,19 +103,20 @@ def home_view():
     st.markdown(
                 """
                 <h1 style="text-align:center; font-size:2.4rem; font-weight:700;">
-                    Como funciona?
+                   <span style="color:{COLOR_UFPR_BLACK}">Como funciona?</span>
                 </h1>
                 """,
                 unsafe_allow_html=True
             )
     col1, col2, col3 = st.columns(3)
+
     with col1:
         st.markdown(
             f"""
-            <div style="{CARD_STYLE_BOXES}">
+            <div style="{CARD_STYLE_BOXES}; text-align:center;">
                 <div style="font-size:2rem;">1</div>
-                <h3 style="margin-top:10px;">nome etapa</h3>
-                <p>texto etapa</p>
+                <h3 style="margin-top:10px;">Navegue!</h3>
+                <p>Acesse no topo da página as abas referentes a cada avaliação promovida pela UFPR e realize suas consultas.</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -119,57 +125,63 @@ def home_view():
 
         st.markdown(
             f"""
-            <div style="{CARD_STYLE_BOXES}">
+            <div style="{CARD_STYLE_BOXES}; text-align:center;">
                 <div style="font-size:2rem;">4️</div>
-                <h3 style="margin-top:10px;">nome etapa</h3>
-                <p>texto etapa</p>
+                <h3 style="margin-top:10px;">Gráficos</h3>
+                <p>Explore os gráficos e interaja com eles! Eles respondem aos filtros aplicados, permitindo visualizar tanto a distribuição geral das respostas quanto os resultados por eixo e pelas unidades gestoras que mais participaram.</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
-    with col2: 
+
+    with col2:
         st.markdown(
-                    f"""
-                    <div style="{CARD_STYLE_BOXES}">
-                        <div style="font-size:2rem;">2️</div>
-                        <h3 style="margin-top:10px;">nome etapa</h3>
-                        <p>texto etapa</p>
-                    """,
-                    unsafe_allow_html=True,
-                )
+            f"""
+            <div style="{CARD_STYLE_BOXES}; text-align:center;">
+                <div style="font-size:2rem;">2️</div>
+                <h3 style="margin-top:10px;">Métricas Gerais e Período</h3>
+                <p>Atente-se às métricas gerais: elas sempre representam o total de respostas e não são afetadas pelos filtros. Estão vinculadas apenas ao ano/período selecionado.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         st.write("")
+
         st.markdown(
-                    f"""
-                    <div style="{CARD_STYLE_BOXES}">
-                        <div style="font-size:2rem;">5️</div>
-                        <h3 style="margin-top:10px;">nome etapa</h3>
-                        <p>texto etapa</p>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
+            f"""
+            <div style="{CARD_STYLE_BOXES}; text-align:center;">
+                <div style="font-size:2rem;">5️</div>
+                <h3 style="margin-top:10px;">Dimensões</h3>
+                <p>Filtre as afirmações selecionando a dimensão à qual pertencem dentro da pesquisa.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
     with col3:
         st.markdown(
-                f"""
-                <div style="{CARD_STYLE_BOXES}">
-                    <div style="font-size:2rem;">3️</div>
-                    <h3 style="margin-top:10px;">nome etapa</h3>
-                    <p>texto etapa</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            f"""
+            <div style="{CARD_STYLE_BOXES}; text-align:center;">
+                <div style="font-size:2rem;">3️</div>
+                <h3 style="margin-top:10px;">Filtros</h3>
+                <p>Escolha os filtros disponíveis. Os gráficos abaixo serão atualizados automaticamente.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         st.write("")
+
         st.markdown(
-                f"""
-                <div style="{CARD_STYLE_BOXES}">
-                    <div style="font-size:2rem;">6️</div>
-                    <h3 style="margin-top:10px;">nome etapa</h3>
-                    <p>texto etapa</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+            f"""
+            <div style="{CARD_STYLE_BOXES}; text-align:center;">
+                <div style="font-size:2rem;">6️</div>
+                <h3 style="margin-top:10px;">Análise Detalhada</h3>
+                <p>Explore cada afirmação do questionário individualmente, consulte os dados brutos e, caso deseje, realize o download.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
 
     st.write("")  
     st.write("")  
@@ -206,7 +218,7 @@ def home_view():
             <div style="{CARD_STYLE_BOXES}">
                 <div style="font-size:2rem;">✅</div>
                 <h3 style="margin-top:10px;">Concordo</h3>
-                <p>Indica que o respondente concorda com a afirmação apresentada</p>
+                <p>Indica que o respondente concorda com a afirmação apresentada. Utilizamos como sinônimo de satisfação com as políticas da UFPR</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -218,7 +230,7 @@ def home_view():
             <div style="{CARD_STYLE_BOXES}">
                 <div style="font-size:2rem;">❌</div>
                 <h3 style="margin-top:10px;">Discordo</h3>
-                <p>Indica que o respondente discorda da afirmação apresentada</p>
+                <p>Indica que o respondente discorda da afirmação apresentada. Utilizamos como sinônimo de insatisfação com as políticas da UFPR</p>
             </div>
             """,
             unsafe_allow_html=True,
