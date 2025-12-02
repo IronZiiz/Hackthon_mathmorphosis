@@ -18,40 +18,40 @@ class AvaliacaoDosCursosService(DataLoader):
         self.curso_value = curso_value
 
     def get_total_respondentes(self) -> int:
-        return self.df["ID_PESQUISA"].nunique() # Será que essa quantidade é de fato os respondentes?
+        return self.df["ID_PESQUISA"].nunique()
     
     def get_concordancia(self) -> float:
         df = self.df
         total = len(df)
-        concordancia = len(df[df["RESPOSTA"] == "Concordo"])
+        concordancia = len(df[df["VALOR_RESPOSTA"] > 0])
         return (concordancia / total) * 100
     
     def get_discordancia(self) -> float:
         df = self.df
         total = len(df)
-        discordancia = len(df[df["RESPOSTA"] == "Discordo"])
+        discordancia = len(df[df["VALOR_RESPOSTA"] < 0 ])
 
         return (discordancia / total) * 100
     
     def get_desconhecimento(self) -> float:
         df = self.df
         total = len(df)
-        desconhecimento = len(df[df["RESPOSTA"] == "Desconheço"])
+        desconhecimento = len(df[df["VALOR_RESPOSTA"] == 0])
         return (desconhecimento / total) * 100
     
     def get_concordancia_total(self) -> int:
         df = self.df
-        concordancia = len(df[df["RESPOSTA"] == "Concordo"])
+        concordancia = len(df[df["VALOR_RESPOSTA"] > 0])
         return concordancia
     
     def get_discordancia_total(self) -> int:
         df = self.df
-        discordancia = len(df[df["RESPOSTA"] == "Discordo"])
+        discordancia = len(df[df["VALOR_RESPOSTA"] < 0])
         return discordancia
     
     def get_desconhecimento_total(self) -> int:
         df = self.df
-        desconhecimento = len(df[df["RESPOSTA"] == "Desconheço"])
+        desconhecimento = len(df[df["VALOR_RESPOSTA"] == 0])
         return desconhecimento
     
     def formatacao_curso_setor(self) -> list:
@@ -121,24 +121,25 @@ class AvaliacaoDosCursosService(DataLoader):
         'Desconheço': '#95a5a6'
         }
         df_filtered = self.df_curso_filtrado_selecionado()
+
         if df_filtered.empty:
             return None
 
         df_grouped = (
-            df_filtered.groupby(['EIXO', 'RESPOSTA'])
+            df_filtered.groupby(['EIXO_NOME', 'RESPOSTA'])
             .size()
             .reset_index(name='COUNT')
         )
 
         total_por_eixo = (
-            df_filtered.groupby('EIXO')
+            df_filtered.groupby('EIXO_NOME')
             .size()
             .reset_index(name='TOTAL')
         )
 
-        df_merged = pd.merge(df_grouped, total_por_eixo, on='EIXO')
+        df_merged = pd.merge(df_grouped, total_por_eixo, on='EIXO_NOME')
         df_merged['PERCENT'] = (df_merged['COUNT'] / df_merged['TOTAL']) * 100
-        df_merged = df_merged.sort_values('EIXO')
+        df_merged = df_merged.sort_values('EIXO_NOME')
 
         df_merged["LABEL"] = df_merged.apply(
             lambda row: f"{row['PERCENT']:.1f}% ({row['COUNT']})", axis=1
@@ -146,7 +147,7 @@ class AvaliacaoDosCursosService(DataLoader):
 
         fig_bar = px.bar(
             df_merged,
-            x="EIXO",
+            x='EIXO_NOME',
             y="PERCENT",
             color="RESPOSTA",
             color_discrete_map=COLOR_MAP,

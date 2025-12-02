@@ -16,7 +16,9 @@ COLOR_MAP = {
 def avaliacao_dos_cursos_view():
     service = AvaliacaoDosCursosService()
     df = service.df
-    st.dataframe(df)
+    
+    # st.dataframe(df)
+
     st.title("Resultados Avaliação dos Cursos")
 
     col1,_,_,_,_,_= st.columns(6)
@@ -94,40 +96,17 @@ def avaliacao_dos_cursos_view():
     with col2:
         st.write("")
         st.write("")
-        df_merged = pd.DataFrame({
-        "EIXO": ["Infraestrutura", "Infraestrutura", "Infraestrutura",
-                "Didática", "Didática", "Didática"],
-        "RESPOSTA": ["Concordo", "Discordo", "Desconheço",
-                    "Concordo", "Discordo", "Desconheço"],
-        "COUNT": [40, 8, 6, 50, 12, 5],
-        "TOTAL": [54, 54, 54, 67, 67, 67]
-    })
-        df_merged["PERCENT"] = (df_merged["COUNT"] / df_merged["TOTAL"]) * 100
-        fig_bar = px.bar(
-        df_merged,
-        x="EIXO",
-        y="PERCENT",
-        color="RESPOSTA",
-        color_discrete_map=COLOR_MAP,
-        barmode="stack",
-        text_auto=".0f",
-        height=400
-        )
-        fig_bar.update_layout(
-        xaxis_title="",
-        yaxis_title="% das Respostas",
-        legend_title="",
-        )
-        fig_bar.update_yaxes(range=[0, 100])
+        
+        fig_bar = service.grafico_resumo_por_eixo()
         st.plotly_chart(fig_bar, use_container_width=True, key ="plot_bar_curso_eixo")
     
     
 
-    dimensoes = service.df['DIMENSAO'].unique().tolist()
+    dimensoes = service.df['DIMENSAO_NOME'].unique().tolist()
 
     dim_sel = st.selectbox(
     "Selecione a Dimensão para Análise Detalhada:",
-        dimensoes,key = "dimensao_curso"
+        dimensoes ,key = "dimensao_curso"
     )
 
     df_questions_answers = service.df.groupby(['PERGUNTA','VALOR_RESPOSTA'])['VALOR_RESPOSTA'].count()
