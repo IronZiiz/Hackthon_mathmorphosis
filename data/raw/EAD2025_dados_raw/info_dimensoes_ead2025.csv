@@ -1,10 +1,3 @@
-Tipo_Perg,Grupo_de_Perguntas,EIXO,DIMENSAO
-RsSc,Responsabilidade Social,2,3
-PlAc,Políticas Acadêmicas,3,2
-CiEx,Comunicação Interna e Externa,3,4
-AsEs,Assistência Estudantil,3,9
-UgCa,Unidades Gestoras e Considerações Adicionais,6,-1
-DsAO,Abordagem e organização da disciplina,2,1
-AtPM,Atuação do Professor e do Monitor,3,9
-AAvE,Autoavaliação do estudante e considerações adicionais,1,8
-AvPDSPF,Avaliação da percepção discente sobre o processo formativo,1,8
+version https://git-lfs.github.com/spec/v1
+oid sha256:952a4ba408675bfebb1fc05819754aa1ee6fe16d0883b5a9b65ab3df0f1402bd
+size 483

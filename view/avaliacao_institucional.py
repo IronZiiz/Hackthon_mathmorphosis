@@ -88,7 +88,7 @@ def avaliacao_institucional_view():
     if "Todos" in eixo_value or not eixo_value:
         df_filtered = df.copy()
     else:
-        df_filtered = df[df['EIXO'].isin(eixo_value)].sort_values(by='Ordem')
+        df_filtered = df[df['EIXO_NOME'].isin(eixo_value)].sort_values(by='Ordem')
 
     with col2:
         # Filter all the questions in the selected axis
@@ -141,10 +141,10 @@ def avaliacao_institucional_view():
 
     st.subheader('Analise detalhada das perguntas')
     
-    df_unique = df[['DIMENSAO_NUMERICA', 'DIMENSAO']].drop_duplicates().sort_values('DIMENSAO_NUMERICA')
+    df_unique = df[['DIMENSAO_NUM', 'DIMENSAO_NOME']].drop_duplicates().sort_values('DIMENSAO_NUM')
 
     lista_dimensoes_formated = [
-    f"{int(row.DIMENSAO_NUMERICA)} - {row.DIMENSAO}" 
+    f"{int(row.DIMENSAO_NUM)} - {row.DIMENSAO_NOME}" 
     for row in df_unique.itertuples()
 ]
 

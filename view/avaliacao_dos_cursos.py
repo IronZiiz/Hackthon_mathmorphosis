@@ -16,7 +16,9 @@ COLOR_MAP = {
 def avaliacao_dos_cursos_view():
     service = AvaliacaoDosCursosService()
     df = service.df
-    st.dataframe(df)
+    
+    # st.dataframe(df)
+
     st.title("Resultados Avaliação dos Cursos")
 
     col1,_,_,_,_,_= st.columns(6)
@@ -94,48 +96,21 @@ def avaliacao_dos_cursos_view():
     with col2:
         st.write("")
         st.write("")
-        df_merged = pd.DataFrame({
-        "EIXO": ["Infraestrutura", "Infraestrutura", "Infraestrutura",
-                "Didática", "Didática", "Didática"],
-        "RESPOSTA": ["Concordo", "Discordo", "Desconheço",
-                    "Concordo", "Discordo", "Desconheço"],
-        "COUNT": [40, 8, 6, 50, 12, 5],
-        "TOTAL": [54, 54, 54, 67, 67, 67]
-    })
-        df_merged["PERCENT"] = (df_merged["COUNT"] / df_merged["TOTAL"]) * 100
-        fig_bar = px.bar(
-        df_merged,
-        x="EIXO",
-        y="PERCENT",
-        color="RESPOSTA",
-        color_discrete_map=COLOR_MAP,
-        barmode="stack",
-        text_auto=".0f",
-        height=400
-        )
-        fig_bar.update_layout(
-        xaxis_title="",
-        yaxis_title="% das Respostas",
-        legend_title="",
-        )
-        fig_bar.update_yaxes(range=[0, 100])
+        
+        fig_bar = service.grafico_resumo_por_eixo()
         st.plotly_chart(fig_bar, use_container_width=True, key ="plot_bar_curso_eixo")
     
     
 
-    dimensoes = service.df['DIMENSAO'].unique().tolist()
+    dimensoes = service.df['DIMENSAO_NOME'].unique().tolist()
 
     dim_sel = st.selectbox(
     "Selecione a Dimensão para Análise Detalhada:",
-        dimensoes,key = "dimensao_curso"
+        dimensoes ,key = "dimensao_curso"
     )
-
-    df_questions_answers = service.df.groupby(['PERGUNTA','VALOR_RESPOSTA'])['VALOR_RESPOSTA'].count()
-
-    st.dataframe(df_questions_answers)
     
     # 1. Filtra os dados da dimensão escolhida
-    df_dimensao = service.df[service.df['DIMENSAO'] == dim_sel]
+    df_dimensao = service.df[service.df['DIMENSAO_NOME'] == dim_sel]
 
     if df_dimensao.empty:
         st.warning("Sem dados para essa dimensão.")
@@ -230,27 +205,30 @@ def avaliacao_dos_cursos_view():
         fig_div.add_vline(x=0, line_width=1, line_color="black", opacity=0.3)
         st.plotly_chart(fig_div, use_container_width=True, key="plot_perguntas_curso")
 
-    dimensoes = sorted(service.df['DIMENSAO'].dropna().unique()) # Pega dimensões reais do banco
+    dimensoes = sorted(service.df['DIMENSAO_NOME'].dropna().unique()) # Pega dimensões reais do banco
+    
     dim_sel = st.selectbox(
     "Selecione a Dimensão...",
     dimensoes,
     key="dimensao_curso_radar"
     )
 
+    service.dimensao_value = dim_sel
+
     # Layout: 2 colunas para o Radar (Gráfico + Tabela) | 1 Coluna para Barras
-    col_radar_grafico, col_radar_legenda, col_barras = st.columns([1.2, 0.8, 1.5])
+    col_radar_grafico, col_radar_legenda = st.columns([1.2, 0.8])
 
     # --- COLUNA 1: O GRÁFICO ---
     with col_radar_grafico:
         st.subheader("Comparativo Radar")
     
-    # Chama a função nova (que retorna 2 coisas)
-    fig_radar_dim, df_legenda_radar = service.grafico_radar_dimensao_curso(dim_sel)
-    
-    if fig_radar_dim:
-        st.plotly_chart(fig_radar_dim, use_container_width=True)
-    else:
-        st.warning("Sem dados para radar.")
+        # Chama a função nova (que retorna 2 coisas)
+        fig_radar_dim, df_legenda_radar = service.grafico_radar_dimensao_curso()
+        
+        if fig_radar_dim:
+            st.plotly_chart(fig_radar_dim, use_container_width=True)
+        else:
+            st.warning("Sem dados para radar.")
 
     # --- COLUNA 2: A LEGENDA (ID -> PERGUNTA) ---
     with col_radar_legenda:
@@ -269,23 +247,20 @@ def avaliacao_dos_cursos_view():
         else:
             st.write("-")
 
-    # --- COLUNA 3: O GRÁFICO DE BARRAS (Existente) ---
-    with col_barras:
-        st.subheader("Saldo de Opinião")
-        # ... (seu código do gráfico de barras horizontais continua aqui igualzinho) ...
-
-        st.markdown('---')
-
-        with st.expander("Ver dados brutos (Frequências Absolutas) (TEMPORÁRIO)"):
-            st.dataframe(service.df) # Temp
-            message = "Lorem ipsum.\nStreamlit is cool."
-            st.download_button(
-                key=2,
-                label="Download Dados brutos",
-                data=message,
-                file_name="message.txt",
-                on_click="ignore",
-                type="primary",
-                icon=":material/download:"
-            )
+    # ------------ #
+    st.markdown('---')
+    # ------------ #
+    
+    with st.expander("Ver dados brutos (Frequências Absolutas) (TEMPORÁRIO)"):
+        st.dataframe(service.df) # Temp
+        message = "Lorem ipsum.\nStreamlit is cool."
+        st.download_button(
+            key=2,
+            label="Download Dados brutos",
+            data=message,
+            file_name="message.txt",
+            on_click="ignore",
+            type="primary",
+            icon=":material/download:"
+        )
     

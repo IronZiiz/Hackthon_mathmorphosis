@@ -23,7 +23,7 @@ class AvaliacaoInstitucionalService(DataLoader):
     
     def formatar_eixos(self) -> list:
         df = self.df_load_dados_institucional
-        list_eixos = list(df['EIXO'].unique())
+        list_eixos = list(df['EIXO_NOME'].unique())
 
         return ['Todos'] + list_eixos
     
@@ -41,7 +41,7 @@ class AvaliacaoInstitucionalService(DataLoader):
         if not eixo_value or "Todos" in eixo_value:
             df_filtered = df.copy()
         else:
-            df_filtered = df[df["EIXO"].isin(eixo_value)].sort_values(by="Ordem")
+            df_filtered = df[df["EIXO_NOME"].isin(eixo_value)].sort_values(by="Ordem")
 
         if pergunta_value and "Todos" not in pergunta_value:
             perguntas_extraidas = [p.split(" - ", 1)[1] for p in pergunta_value]
@@ -154,25 +154,25 @@ class AvaliacaoInstitucionalService(DataLoader):
         if df_filtered.empty:
             return None
         
-        df_filtered['EIXO'] = df_filtered['EIXO'].fillna(
-            df_filtered['EIXO'].str.replace("_", " ").str.title()
+        df_filtered['EIXO_NOME'] = df_filtered['EIXO_NOME'].fillna(
+            df_filtered['EIXO_NOME'].str.replace("_", " ").str.title()
         )
 
         df_grouped = (
-            df_filtered.groupby(['EIXO', 'RESPOSTA'])
+            df_filtered.groupby(['EIXO_NOME', 'RESPOSTA'])
             .size()
             .reset_index(name='COUNT')
         )
 
         total_por_eixo = (
-            df_filtered.groupby('EIXO')
+            df_filtered.groupby('EIXO_NOME')
             .size()
             .reset_index(name='TOTAL')
         )
 
-        df_merged = pd.merge(df_grouped, total_por_eixo, on='EIXO')
+        df_merged = pd.merge(df_grouped, total_por_eixo, on='EIXO_NOME')
         df_merged['PERCENT'] = (df_merged['COUNT'] / df_merged['TOTAL']) * 100
-        df_merged = df_merged.sort_values('EIXO')
+        df_merged = df_merged.sort_values('EIXO_NOME')
 
         df_merged["LABEL"] = df_merged.apply(
             lambda row: f"{row['PERCENT']:.1f}% ({row['COUNT']})", axis=1
@@ -180,7 +180,7 @@ class AvaliacaoInstitucionalService(DataLoader):
 
         fig_bar = px.bar(
             df_merged,
-            x='EIXO',
+            x='EIXO_NOME',
             y="PERCENT",
             color="RESPOSTA",
             color_discrete_map=COLOR_MAP,
@@ -299,10 +299,10 @@ class AvaliacaoInstitucionalService(DataLoader):
 
         # --- CORREÇÃO PRINCIPAL ---
         # Filtra direto pela coluna 'DIMENSAO' que já existe no seu CSV novo
-        if 'DIMENSAO' not in df.columns:
+        if 'DIMENSAO_NOME' not in df.columns:
             return None
 
-        df_filtered = df[df["DIMENSAO"] == dim_sel]
+        df_filtered = df[df["DIMENSAO_NOME"] == dim_sel]
 
         if df_filtered.empty:
             return None
