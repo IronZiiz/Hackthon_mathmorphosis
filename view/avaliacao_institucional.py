@@ -15,55 +15,12 @@ COLOR_MAP = {
 
 
 def avaliacao_institucional_view():
-    @st.cache_data
-    def load_data_detalhado():
-        hierarquia = {
-            "Eixo 3 - Políticas Acadêmicas": {
-                "Dimensão 2 - Ensino, Pesquisa e Extensão": [
-                    "01 - O curso promove a interdisciplinaridade?",
-                    "02 - O curso possibilita formação plural?",
-                    "03 - O curso relaciona teoria com prática?",
-                    "06 - Há indissociabilidade ensino-pesquisa?",
-                ],
-                "Dimensão 9 - Política de Atendimento": [
-                    "18 - O atendimento pedagógico é suficiente?",
-                    "19 - O apoio à permanência gera resultados?",
-                ]
-            },
-            "Eixo 4 - Políticas de Gestão": {
-                "Dimensão 5 - Políticas de Pessoal": [
-                    "25 - O corpo docente é qualificado?",
-                    "26 - Os técnicos atendem bem as demandas?",
-                ],
-                "Dimensão 6 - Gestão da Instituição": [
-                    "12 - Os canais de comunicação são visíveis?",
-                    "13 - A imagem pública é bem acompanhada?",
-                ]
-            }
-        }
-
-        data = []
-        for _ in range(500):
-            eixo_key = np.random.choice(list(hierarquia.keys()))
-            dim_key = np.random.choice(list(hierarquia[eixo_key].keys()))
-            perg_key = np.random.choice(hierarquia[eixo_key][dim_key])
-            
-            resp = np.random.choice(
-                ['Concordo', 'Discordo', 'Desconheço'],
-                p=[0.6, 0.3, 0.1]
-            )
-            
-            data.append([eixo_key, dim_key, perg_key, resp])
-            
-        return pd.DataFrame(
-            data,
-            columns=['EIXO', 'DIMENSAO', 'PERGUNTA', 'RESPOSTA']
-        )
 
     df = AvaliacaoInstitucionalService().df_load_dados_institucional
     
     
     st.title('Resultados Avaliação Institucional')
+    
     col1 ,_,_,_,_,_= st.columns(6)
     with col1:
         year_value = st.selectbox('Selecione o Ano', ('2025','2024'),
@@ -113,7 +70,11 @@ def avaliacao_institucional_view():
             value=f"{service.desconhecimento_ano_atual():.2f}%",
             delta=1
         )
-        
+    
+    # ---------- #
+    st.markdown("---")
+    # ---------- #
+         
     col1, col2 = st.columns(2)
     with col1:
         opcoes_eixo = service.formatar_eixos()
@@ -123,21 +84,12 @@ def avaliacao_institucional_view():
             default=["Todos"],
             key="filtro_eixo"
         )
+
     if "Todos" in eixo_value or not eixo_value:
         df_filtered = df.copy()
     else:
-        mapeamento = {
-            "DESENVOLVIMENTO_INSTITUCIONAL": "Desenvolvimento Institucional",
-            "POLITICAS_DE_GESTAO": "Políticas de Gestão",
-            "COMPLEXO_DO_HOSPITAL_DE_CLINICAS": "Complexo do Hospital de Clínicas"
-        }
-        reverse_map = {v: k for k, v in mapeamento.items()}
+        df_filtered = df[df['EIXO'].isin(eixo_value)].sort_values(by='Ordem')
 
-        eixos_selecionados = [
-            reverse_map.get(e, e.replace(" ", "_").upper()) for e in eixo_value
-        ]
-        eixo_value = eixos_selecionados
-        df_filtered = df[df['EIXO'].isin(eixos_selecionados)].sort_values(by='Ordem')
     with col2:
         # Filter all the questions in the selected axis
         perguntas_unicas = (df_filtered['Ordem'].astype(int).astype(str) + ' - ' + df_filtered['PERGUNTA']).unique().tolist()
@@ -155,9 +107,11 @@ def avaliacao_institucional_view():
         perguntas_value=perguntas_value
     )
 
+    # ---------- #
     st.markdown("---")
-    st.subheader('Distribuição de respostas')
+    # ---------- #
 
+    st.subheader('Distribuição de respostas')
     
     col_graf1, col_graf2 = st.columns(2)
     
@@ -172,12 +126,7 @@ def avaliacao_institucional_view():
     with col_graf2:
 
         st.plotly_chart(service.grafico_resumo_por_eixo(), use_container_width=True)
-        
-        
-       
 
-
-    st.markdown("---")
     st.subheader('Participação das Unidades gestoras nas Pesquisas')
     col1, col2 = st.columns(2)
     with col1: 
@@ -186,22 +135,43 @@ def avaliacao_institucional_view():
     with col2:
         st.plotly_chart(service.grafico_donut_top10(),use_container_width=True)
 
-    
+    # ---------- #
     st.markdown("---")
-    st.subheader('Analise detalhada das perguntas')
+    # ---------- #
 
-    lista_dimensoes = df_filtered['DIMENSAO_NUMERICA'].unique()
+    st.subheader('Analise detalhada das perguntas')
+    
+    df_unique = df[['DIMENSAO_NUMERICA', 'DIMENSAO']].drop_duplicates().sort_values('DIMENSAO_NUMERICA')
+
+    lista_dimensoes_formated = [
+    f"{int(row.DIMENSAO_NUMERICA)} - {row.DIMENSAO}" 
+    for row in df_unique.itertuples()
+]
+
     dim_sel = st.selectbox(
-        "Selecione a Dimensão para Análise Detalhada:",lista_dimensoes
+        "Selecione a Dimensão para Análise Detalhada:",lista_dimensoes_formated
     )
-    service = AvaliacaoInstitucionalService(
+
+    dim_sel_temp = dim_sel.split('-',maxsplit=1)[1].strip()
+
+    service = AvaliacaoInstitucionalService( 
         eixos_value=eixo_value,
         perguntas_value=perguntas_value,
-        dimensao_value=dim_sel
+        dimensao_value=dim_sel_temp
     )
 
+    figura_saldo = service.grafico_saldo_opiniao_dimensao()
 
-    st.plotly_chart(service.grafico_saldo_opiniao_dimensao(), use_container_width=True)
+    # 2. Verifica se veio um gráfico de verdade ou None
+    if figura_saldo is not None:
+        st.plotly_chart(figura_saldo, use_container_width=True)
+    else:
+        # 3. Mostra uma mensagem amigável se não tiver dados
+        st.info("Aguardando seleção de uma dimensão válida ou não há dados para exibir.")
+
+    # ---------- #
+    st.markdown("---")
+    # ---------- #
 
     with st.expander("Ver dados brutos (Frequências Absolutas) (TEMPORÁRIO)"):
         st.dataframe(df) # Temp

@@ -25,15 +25,7 @@ class AvaliacaoInstitucionalService(DataLoader):
         df = self.df_load_dados_institucional
         list_eixos = list(df['EIXO'].unique())
 
-        mapeamento = {
-            "DESENVOLVIMENTO_INSTITUCIONAL": "Desenvolvimento Institucional",
-            "POLITICAS_DE_GESTAO": "Políticas de Gestão",
-            "COMPLEXO_DO_HOSPITAL_DE_CLINICAS": "Complexo do Hospital de Clínicas"
-        }
-
-        list_eixos_formatada = [mapeamento.get(eixo, eixo.replace("_", " ").title()) for eixo in list_eixos]
-
-        return ['Todos'] + list_eixos_formatada
+        return ['Todos'] + list_eixos
     
     def filtrar_dados_institucionais(self):
         df = self.df_load_dados_institucional.copy()
@@ -156,34 +148,31 @@ class AvaliacaoInstitucionalService(DataLoader):
         'Discordo': '#e74c3c',
         'Desconheço': '#95a5a6'
         }
+        
         df_filtered = self.filtrar_dados_institucionais()
+
         if df_filtered.empty:
             return None
-        mapeamento = {
-        "DESENVOLVIMENTO_INSTITUCIONAL": "Desenvolvimento Institucional",
-        "POLITICAS_DE_GESTAO": "Políticas de Gestão",
-            "COMPLEXO_DO_HOSPITAL_DE_CLINICAS": "Complexo do Hospital de Clínicas"
-        }
-        df_filtered['EIXO_FORMATADO'] = df_filtered['EIXO'].map(mapeamento).fillna(
+        
+        df_filtered['EIXO'] = df_filtered['EIXO'].fillna(
             df_filtered['EIXO'].str.replace("_", " ").str.title()
         )
 
-
         df_grouped = (
-            df_filtered.groupby(['EIXO_FORMATADO', 'RESPOSTA'])
+            df_filtered.groupby(['EIXO', 'RESPOSTA'])
             .size()
             .reset_index(name='COUNT')
         )
 
         total_por_eixo = (
-            df_filtered.groupby('EIXO_FORMATADO')
+            df_filtered.groupby('EIXO')
             .size()
             .reset_index(name='TOTAL')
         )
 
-        df_merged = pd.merge(df_grouped, total_por_eixo, on='EIXO_FORMATADO')
+        df_merged = pd.merge(df_grouped, total_por_eixo, on='EIXO')
         df_merged['PERCENT'] = (df_merged['COUNT'] / df_merged['TOTAL']) * 100
-        df_merged = df_merged.sort_values('EIXO_FORMATADO')
+        df_merged = df_merged.sort_values('EIXO')
 
         df_merged["LABEL"] = df_merged.apply(
             lambda row: f"{row['PERCENT']:.1f}% ({row['COUNT']})", axis=1
@@ -191,7 +180,7 @@ class AvaliacaoInstitucionalService(DataLoader):
 
         fig_bar = px.bar(
             df_merged,
-            x='EIXO_FORMATADO',
+            x='EIXO',
             y="PERCENT",
             color="RESPOSTA",
             color_discrete_map=COLOR_MAP,
@@ -285,7 +274,9 @@ class AvaliacaoInstitucionalService(DataLoader):
                 values=values,
                 hole=0.6,
                 textinfo="label+percent+value",
-                marker=dict(colors=["#3498db", "#95a5a6"])
+                marker=dict(colors=["#3498db", "#95a5a6"]),
+                insidetextorientation='horizontal',
+                rotation=68
             )
         ])
 
@@ -299,85 +290,122 @@ class AvaliacaoInstitucionalService(DataLoader):
 
     def grafico_saldo_opiniao_dimensao(self):
         df = self.df_load_dados_institucional.copy()
-        dim_sel = self.dimensao_value
+        
+        # O valor selecionado na tela (ex: "Missão e Plano...")
+        dim_sel = self.dimensao_value 
+        print('Essa é a porra do problema: ', dim_sel)
+        if not dim_sel:
+            return None
 
-        df_filtered = df[df["DIMENSAO_NUMERICA"] == dim_sel]
+        # --- CORREÇÃO PRINCIPAL ---
+        # Filtra direto pela coluna 'DIMENSAO' que já existe no seu CSV novo
+        if 'DIMENSAO' not in df.columns:
+            return None
 
-        grouped = (
-            df_filtered.groupby(['PERGUNTA', 'RESPOSTA'])
-            .size()
-            .unstack(fill_value=0)
-        )
+        df_filtered = df[df["DIMENSAO"] == dim_sel]
 
-        stats_pct = grouped.div(grouped.sum(axis=1), axis=0) * 100
+        if df_filtered.empty:
+            return None
 
-        if 'Concordo' not in stats_pct.columns:
-            stats_pct['Concordo'] = 0.0
-        if 'Discordo' not in stats_pct.columns:
-            stats_pct['Discordo'] = 0.0
+        # 2. Processamento dos Dados (Crosstab é mais seguro que groupby manual)
+        # normalize='index' garante que a soma das linhas seja 100%
+        stats_pct = pd.crosstab(
+            df_filtered['PERGUNTA'], 
+            df_filtered['RESPOSTA'], 
+            normalize='index'
+        ) * 100
 
+        # 3. Garante que todas as colunas existem (mesmo se ninguém respondeu)
+        for col in ['Concordo', 'Discordo', 'Desconheço']:
+            if col not in stats_pct.columns:
+                stats_pct[col] = 0.0
+
+        # 4. Ordenação (Opcional: ordena pelos que tem mais concordância)
         stats_pct = stats_pct.sort_values('Concordo', ascending=True)
 
+        # 5. Preparação das Listas
         questions = stats_pct.index.tolist()
         concordo_list = stats_pct['Concordo'].tolist()
         discordo_list = stats_pct['Discordo'].tolist()
+        desconheco_list = stats_pct['Desconheço'].tolist()
+
+        # Preparação Matemática para o Centro (Dividir Desconheço em 2)
+        desconheco_metade = [x / 2 for x in desconheco_list]
+        desconheco_metade_neg = [-x for x in desconheco_metade]
         discordo_neg_list = [-x for x in discordo_list]
 
+        # Labels para o hover (mostrando o valor total, não a metade)
+        hover_desconheco = [f"Desconheço: {x:.1f}%" for x in desconheco_list]
+        # Só mostra texto na barra se for maior que 1% para não poluir
+        text_desconheco = [f"{x:.1f}%" if x > 1 else "" for x in desconheco_list]
+
+        # 6. Formatação de Texto (Helper interno ou textwrap)
         def quebrar_texto(texto, max_chars=60):
-                if len(texto) <= max_chars:
-                    return texto
-                palavras = texto.split()
-                linhas = []
-                linha_atual = ""
-                for palavra in palavras:
-                    if len(linha_atual) + len(palavra) + 1 <= max_chars:
-                        linha_atual += palavra + " "
-                    else:
-                        linhas.append(linha_atual.strip())
-                        linha_atual = palavra + " "
-                if linha_atual:
-                    linhas.append(linha_atual.strip())
-                return "<br>".join(linhas)
+            if len(texto) <= max_chars: return texto
+            import textwrap
+            return "<br>".join(textwrap.wrap(texto, width=max_chars))
 
         questions_formatted = [quebrar_texto(q) for q in questions]
 
+        # 7. Plotagem
         fig_div = go.Figure()
 
+        # --- CAMADA 1: CENTRO (Desconheço) ---
+        # Adicionamos primeiro para ficarem colados no eixo 0
+        
+        # Metade Esquerda (Negativa)
         fig_div.add_trace(go.Bar(
-            y=questions_formatted,
-            x=discordo_neg_list,
-            name='Discordo',
-            orientation='h',
-            marker_color='#e74c3c',
-            text=[f"{x:.1f}%" for x in discordo_list],
-            textposition='auto',
-            hoverinfo='text+y',
-            hovertext=[f"Discordância: {x:.1f}%" for x in discordo_list]
+            y=questions_formatted, x=desconheco_metade_neg,
+            name='Desconheço', orientation='h', marker_color='#95a5a6',
+            legendgroup='grp_desc', showlegend=True, # Mostra legenda 1 vez
+            hoverinfo='text', hovertext=hover_desconheco,
+            visible='legendonly' # <--- COMEÇA DESMARCADO/OCULTO
         ))
 
+        # Metade Direita (Positiva)
         fig_div.add_trace(go.Bar(
-            y=questions_formatted,
-            x=concordo_list,
-            name='Concordo',
-            orientation='h',
-            marker_color='#2ecc71',
-            text=[f"{x:.1f}%" for x in concordo_list],
-            textposition='auto',
-            hoverinfo='text+y',
-            hovertext=[f"Concordância: {x:.1f}%" for x in concordo_list]
+            y=questions_formatted, x=desconheco_metade,
+            name='Desconheço', orientation='h', marker_color='#95a5a6',
+            legendgroup='grp_desc', showlegend=False, # Não duplica legenda
+            text=text_desconheco, textposition='inside',
+            hoverinfo='text', hovertext=hover_desconheco,
+            visible='legendonly' # <--- COMEÇA DESMARCADO/OCULTO
         ))
 
+        # --- CAMADA 2: EXTREMOS (Discordo e Concordo) ---
+        
+        # Discordo (Empilha na esquerda, depois do desconheço negativo)
+        fig_div.add_trace(go.Bar(
+            y=questions_formatted, x=discordo_neg_list,
+            name='Discordo', orientation='h', marker_color='#e74c3c',
+            text=[f"{x:.1f}%" if x > 1 else "" for x in discordo_list],
+            textposition='inside', insidetextanchor='middle',
+            hoverinfo='text+y', hovertext=[f"Discordância: {x:.1f}%" for x in discordo_list]
+        ))
+
+        # Concordo (Empilha na direita, depois do desconheço positivo)
+        fig_div.add_trace(go.Bar(
+            y=questions_formatted, x=concordo_list,
+            name='Concordo', orientation='h', marker_color='#2ecc71',
+            text=[f"{x:.1f}%" if x > 1 else "" for x in concordo_list],
+            textposition='inside', insidetextanchor='middle',
+            hoverinfo='text+y', hovertext=[f"Concordância: {x:.1f}%" for x in concordo_list]
+        ))
+
+        # 8. Layout
         fig_div.update_layout(
-            barmode='relative',
-            title=f"Saldo de Opinião por Questão: {dim_sel}",
+            barmode='relative', # O segredo do alinhamento central
+            title=f"Saldo de Opinião: {dim_sel}",
             xaxis_title="% Rejeição <---> % Aprovação",
             yaxis=dict(title=""),
             bargap=0.3,
             legend_title_text='Sentimento',
-            height=len(questions) * 60 + 200
+            height=max(400, len(questions) * 60 + 150), # Altura dinâmica
+            margin=dict(l=10, r=10, t=80, b=20)
         )
 
-        fig_div.add_vline(x=0, line_width=1, line_color="black")
+        # Linha de referência no zero
+        fig_div.add_vline(x=0, line_width=1, line_color="black", opacity=0.3)
 
         return fig_div
 

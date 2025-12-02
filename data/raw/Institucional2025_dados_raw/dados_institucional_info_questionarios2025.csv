@@ -1,7 +1,7 @@
-,ID_QUESTIONARIO,QUESTIONARIO,,,,
-,644,Missão e Plano de Desenvolvimento Institucional,,,,
-,645,Responsabilidade Social,,,,
-,646,Políticas de Pessoal,,,,
-,647,Organização e Gestão da Instituição,,,,
-,648,Sustentabilidade Financeira,,,,
-,649,Complexo do Hospital de Clínicas (CHC-UFPR/Ebserh),,,,
+ID_QUESTIONARIO,QUESTIONARIO,DIMENSAO,EIXO
+644,Missão e Plano de Desenvolvimento Institucional,1,2
+645,Responsabilidade Social,3,2
+646,Políticas de Pessoal,5,4
+647,Organização e Gestão da Instituição,6,4
+648,Sustentabilidade Financeira,10,4
+649,Complexo do Hospital de Clínicas (CHC-UFPR/Ebserh),11,6

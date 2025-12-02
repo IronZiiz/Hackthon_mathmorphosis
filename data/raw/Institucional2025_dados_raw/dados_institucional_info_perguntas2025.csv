@@ -1,7 +1,7 @@
-,Tipo_Perg,Grupo_de_Perguntas,,,,
-,MsãoPDI,Missão e Plano de Desenvolvimento Institucional,,,,
-,RsSc,Responsabilidade Social,,,,
-,PolPes,Políticas de Pessoal,,,,
-,OrgGesInst,Organização e Gestão da Instituição,,,,
-,SustFin,Sustentabilidade Financeira,,,,
-,CHC,Complexo do Hospital de Clínicas (CHC-UFPR/Ebserh),,,,
+Tipo_Perg,Grupo_de_Perguntas,EIXO,DIMENSAO
+MsãoPDI,Missão e Plano de Desenvolvimento Institucional,2,1
+RsSc,Responsabilidade Social,2,3
+PolPes,Políticas de Pessoal,4,5
+OrgGesInst,Organização e Gestão da Instituição,4,6
+SustFin,Sustentabilidade Financeira,4,10
+CHC,Complexo do Hospital de Clínicas (CHC-UFPR/Ebserh),6,11

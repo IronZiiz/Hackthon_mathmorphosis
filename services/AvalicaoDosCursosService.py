@@ -2,6 +2,7 @@ from services.DataLoader  import DataLoader
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+import textwrap
 
 class AvaliacaoDosCursosService(DataLoader): 
     def __init__(self,
@@ -171,8 +172,80 @@ class AvaliacaoDosCursosService(DataLoader):
 
         return fig_bar
     
-    def grafico_radar_setor_curso(self): 
-        return fig_radar
+    def grafico_radar_dimensao_curso(self, dimensao_selecionada):
+        """
+        Gera um radar comparando Curso vs Setor usando ID_PERGUNTA no eixo.
+        Retorna: (fig, df_legenda)
+        """
+        # 1. Filtros Iniciais
+        df_curso = self.df_curso_filtrado_selecionado()
+        
+        if df_curso.empty or 'DIMENSAO' not in df_curso.columns:
+            return None, None # Retorna par de Nones
+            
+        df_curso_dim = df_curso[df_curso['DIMENSAO'] == dimensao_selecionada]
+        
+        if df_curso_dim.empty:
+            return None, None
+
+        # 2. Obtém dados do SETOR
+        nome_setor = df_curso['SETOR_CURSO'].iloc[0]
+        df_setor_dim = self.df[
+            (self.df['SETOR_CURSO'] == nome_setor) & 
+            (self.df['DIMENSAO'] == dimensao_selecionada)
+        ]
+
+        # 3. Criação da Tabela de Legenda (Mapeamento ID -> Pergunta)
+        # Pegamos apenas as perguntas únicas presentes nessa dimensão
+        df_legenda = df_curso_dim[['ID_PERGUNTA', 'PERGUNTA']].drop_duplicates().sort_values('ID_PERGUNTA')
+        
+        # 4. Agrupamento por ID_PERGUNTA
+        media_curso = df_curso_dim.groupby('ID_PERGUNTA')['VALOR_RESPOSTA'].mean()
+        media_setor = df_setor_dim.groupby('ID_PERGUNTA')['VALOR_RESPOSTA'].mean()
+
+        # 5. Merge dos dados
+        df_radar = pd.DataFrame({
+            'Curso': media_curso,
+            'Setor': media_setor
+        }).fillna(0)
+
+        # 6. Preparação dos Eixos (Categorias = IDs)
+        # Convertendo para string para o Plotly entender como categoria
+        categorias = df_radar.index.astype(str).tolist()
+
+        # Fechar o ciclo do radar
+        if len(categorias) > 0:
+            categorias = [*categorias, categorias[0]]
+            valores_curso = [*df_radar['Curso'].tolist(), df_radar['Curso'].iloc[0]]
+            valores_setor = [*df_radar['Setor'].tolist(), df_radar['Setor'].iloc[0]]
+        else:
+            return None, None
+
+        # 7. Plotagem
+        fig = go.Figure()
+
+        # Trace Setor
+        fig.add_trace(go.Scatterpolar(
+            r=valores_setor, theta=categorias, fill='toself',
+            name=f'Média Setor', line=dict(color='gray', dash='dot'), opacity=0.5
+        ))
+
+        # Trace Curso
+        fig.add_trace(go.Scatterpolar(
+            r=valores_curso, theta=categorias, fill='toself',
+            name='Curso', line=dict(color='#e74c3c', width=3)
+        ))
+
+        fig.update_layout(
+            polar=dict(
+                radialaxis=dict(visible=True, range=[-0.5, 1], tickfont=dict(size=9))
+            ),
+            title=f"Detalhe: {dimensao_selecionada}",
+            margin=dict(l=40, r=40, t=50, b=40),
+            height=400 # Altura um pouco menor para caber bem
+        )
+
+        return fig, df_legenda
 
     
 
