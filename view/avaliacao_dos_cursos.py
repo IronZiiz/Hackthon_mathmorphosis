@@ -108,13 +108,9 @@ def avaliacao_dos_cursos_view():
     "Selecione a Dimensão para Análise Detalhada:",
         dimensoes ,key = "dimensao_curso"
     )
-
-    df_questions_answers = service.df.groupby(['PERGUNTA','VALOR_RESPOSTA'])['VALOR_RESPOSTA'].count()
-
-    st.dataframe(df_questions_answers)
     
     # 1. Filtra os dados da dimensão escolhida
-    df_dimensao = service.df[service.df['DIMENSAO'] == dim_sel]
+    df_dimensao = service.df[service.df['DIMENSAO_NOME'] == dim_sel]
 
     if df_dimensao.empty:
         st.warning("Sem dados para essa dimensão.")
@@ -209,27 +205,30 @@ def avaliacao_dos_cursos_view():
         fig_div.add_vline(x=0, line_width=1, line_color="black", opacity=0.3)
         st.plotly_chart(fig_div, use_container_width=True, key="plot_perguntas_curso")
 
-    dimensoes = sorted(service.df['DIMENSAO'].dropna().unique()) # Pega dimensões reais do banco
+    dimensoes = sorted(service.df['DIMENSAO_NOME'].dropna().unique()) # Pega dimensões reais do banco
+    
     dim_sel = st.selectbox(
     "Selecione a Dimensão...",
     dimensoes,
     key="dimensao_curso_radar"
     )
 
+    service.dimensao_value = dim_sel
+
     # Layout: 2 colunas para o Radar (Gráfico + Tabela) | 1 Coluna para Barras
-    col_radar_grafico, col_radar_legenda, col_barras = st.columns([1.2, 0.8, 1.5])
+    col_radar_grafico, col_radar_legenda = st.columns([1.2, 0.8])
 
     # --- COLUNA 1: O GRÁFICO ---
     with col_radar_grafico:
         st.subheader("Comparativo Radar")
     
-    # Chama a função nova (que retorna 2 coisas)
-    fig_radar_dim, df_legenda_radar = service.grafico_radar_dimensao_curso(dim_sel)
-    
-    if fig_radar_dim:
-        st.plotly_chart(fig_radar_dim, use_container_width=True)
-    else:
-        st.warning("Sem dados para radar.")
+        # Chama a função nova (que retorna 2 coisas)
+        fig_radar_dim, df_legenda_radar = service.grafico_radar_dimensao_curso()
+        
+        if fig_radar_dim:
+            st.plotly_chart(fig_radar_dim, use_container_width=True)
+        else:
+            st.warning("Sem dados para radar.")
 
     # --- COLUNA 2: A LEGENDA (ID -> PERGUNTA) ---
     with col_radar_legenda:
@@ -248,23 +247,20 @@ def avaliacao_dos_cursos_view():
         else:
             st.write("-")
 
-    # --- COLUNA 3: O GRÁFICO DE BARRAS (Existente) ---
-    with col_barras:
-        st.subheader("Saldo de Opinião")
-        # ... (seu código do gráfico de barras horizontais continua aqui igualzinho) ...
-
-        st.markdown('---')
-
-        with st.expander("Ver dados brutos (Frequências Absolutas) (TEMPORÁRIO)"):
-            st.dataframe(service.df) # Temp
-            message = "Lorem ipsum.\nStreamlit is cool."
-            st.download_button(
-                key=2,
-                label="Download Dados brutos",
-                data=message,
-                file_name="message.txt",
-                on_click="ignore",
-                type="primary",
-                icon=":material/download:"
-            )
+    # ------------ #
+    st.markdown('---')
+    # ------------ #
+    
+    with st.expander("Ver dados brutos (Frequências Absolutas) (TEMPORÁRIO)"):
+        st.dataframe(service.df) # Temp
+        message = "Lorem ipsum.\nStreamlit is cool."
+        st.download_button(
+            key=2,
+            label="Download Dados brutos",
+            data=message,
+            file_name="message.txt",
+            on_click="ignore",
+            type="primary",
+            icon=":material/download:"
+        )
     

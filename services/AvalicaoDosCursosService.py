@@ -8,7 +8,8 @@ class AvaliacaoDosCursosService(DataLoader):
     def __init__(self,
                 df_load_dados_curso = None,
                 curso_value = None,
-                setor_value = None, 
+                setor_value = None,
+                dimensao_value = None, 
                 ):
         
         if df_load_dados_curso is None:
@@ -16,6 +17,7 @@ class AvaliacaoDosCursosService(DataLoader):
 
         self.df = df_load_dados_curso
         self.curso_value = curso_value
+        self.dimensao_value = dimensao_value
 
     def get_total_respondentes(self) -> int:
         return self.df["ID_PESQUISA"].nunique()
@@ -173,18 +175,20 @@ class AvaliacaoDosCursosService(DataLoader):
 
         return fig_bar
     
-    def grafico_radar_dimensao_curso(self, dimensao_selecionada):
+    def grafico_radar_dimensao_curso(self):
         """
         Gera um radar comparando Curso vs Setor usando ID_PERGUNTA no eixo.
         Retorna: (fig, df_legenda)
         """
+        dimensao_selecionada = self.dimensao_value
+        
         # 1. Filtros Iniciais
         df_curso = self.df_curso_filtrado_selecionado()
         
-        if df_curso.empty or 'DIMENSAO' not in df_curso.columns:
+        if df_curso.empty or 'DIMENSAO_NOME' not in df_curso.columns:
             return None, None # Retorna par de Nones
             
-        df_curso_dim = df_curso[df_curso['DIMENSAO'] == dimensao_selecionada]
+        df_curso_dim = df_curso[df_curso['DIMENSAO_NOME'] == dimensao_selecionada]
         
         if df_curso_dim.empty:
             return None, None
@@ -193,7 +197,7 @@ class AvaliacaoDosCursosService(DataLoader):
         nome_setor = df_curso['SETOR_CURSO'].iloc[0]
         df_setor_dim = self.df[
             (self.df['SETOR_CURSO'] == nome_setor) & 
-            (self.df['DIMENSAO'] == dimensao_selecionada)
+            (self.df['DIMENSAO_NOME'] == dimensao_selecionada)
         ]
 
         # 3. Criação da Tabela de Legenda (Mapeamento ID -> Pergunta)
