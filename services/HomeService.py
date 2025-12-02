@@ -12,14 +12,23 @@ class DataLogger:
         elif self.feedback_value == 0:
             _data = {"feedback": "Ruim"}
         else:
-            return "Valor de feedback inválido."
+            return {
+                "status": "on holding",
+                "message": "Deixe seu feedback!"
+            }
 
         try:
             with open(filename, 'a+', encoding='utf-8') as f:
                 json_record = json.dumps(_data, ensure_ascii=False)
                 f.write(json_record + '\n')
 
-            return f"Feedback salvo em {filename}"
+            return {
+                "status": "success",
+                "message": f"Obrigado pelo feedback!"
+            }
 
         except Exception as e:
-            return f"Erro ao salvar feedback: {str(e)}"
+            return {
+                "status": "error",
+                "message": f"Erro ao salvar feedback!"
+            }

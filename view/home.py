@@ -42,7 +42,7 @@ def home_view():
         """,
         unsafe_allow_html=True
     )
-
+    
     st.markdown("""
     <style>
     .carousel-item {   
@@ -59,6 +59,23 @@ def home_view():
     }
     </style>
     """, unsafe_allow_html=True)
+    st.markdown(
+            """
+            <p style="
+                text-align:center;
+                max-width:750px;
+                margin:auto;
+                font-size:1.1rem;
+                color:#555;
+            ">
+                Ferramenta interativa desenvolvida pela Equipe Mathmorphosis para visualizar os resultados das pesquisas 
+                realizadas junto a alunos e servidores da Universidade Federal do Paraná.
+            </p>
+            """,
+            unsafe_allow_html=True
+        )
+    st.write("")  
+    st.write("") 
     carousel([
     {
         "img": "data/imgs/1.png",
@@ -67,6 +84,11 @@ def home_view():
     },
     {
         "img": "data/imgs/2.png",
+        "title": "",
+        "text": ""
+    },
+    {
+        "img": "data/imgs/3.png",
         "title": "",
         "text": ""
     },
@@ -81,7 +103,7 @@ def home_view():
         "text": ""
     }
     ])
-
+    
     st.write("")  
     st.write("")  
     st.markdown(
@@ -359,11 +381,14 @@ def home_view():
         unsafe_allow_html=True
 )
     feedback_value = st.feedback()
+    service = DataLogger(feedback_value=feedback_value)
+
     if feedback_value is not None:
-        DataLogger.save_feedback_to_json(feedback_value) 
+        save = service.save_feedback_to_json()
         msg = st.empty()
-        msg.success("Obrigado pelo feedback!")
+        msg.success(f"{save['message']}")
         time.sleep(1)
         msg.empty()
     else:
-        st.error("Deixe seu feedback!")
+        save = service.save_feedback_to_json()
+        st.warning(f"{save['message']}")
