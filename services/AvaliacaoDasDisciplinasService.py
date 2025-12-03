@@ -351,3 +351,99 @@ class AvaliacaoDasDisciplinasService(DataLoader):
         fig3.add_vline(x=0, line_width=2, line_dash="dash", line_color="gray", annotation_text="Neutro")
 
         return fig3 
+    
+    def grafico_saldo_opiniao_dimensao(self):
+        df = self.df_disciplinas()
+        dim_sel = self.dimensao_value
+        if not dim_sel:
+            return None
+
+        if 'DIMENSAO_NOME' not in df.columns:
+            return None
+
+        df_filtered = df[df["DIMENSAO_NOME"] == dim_sel]
+        if df_filtered.empty:
+            return None
+
+        stats_pct = pd.crosstab(
+            df_filtered['PERGUNTA'], 
+            df_filtered['RESPOSTA'], 
+            normalize='index'
+        ) * 100
+
+        for col in ['Concordo', 'Discordo', 'Desconheço']:
+            if col not in stats_pct.columns:
+                stats_pct[col] = 0.0
+
+        stats_pct = stats_pct.sort_values('Concordo', ascending=True)
+
+        questions = stats_pct.index.tolist()
+        concordo_list = stats_pct['Concordo'].tolist()
+        discordo_list = stats_pct['Discordo'].tolist()
+        desconheco_list = stats_pct['Desconheço'].tolist()
+
+        desconheco_metade = [x / 2 for x in desconheco_list]
+        desconheco_metade_neg = [-x for x in desconheco_metade]
+        discordo_neg_list = [-x for x in discordo_list]
+
+        hover_desconheco = [f"Desconheço: {x:.1f}%" for x in desconheco_list]
+        text_desconheco = [f"{x:.1f}%" if x > 1 else "" for x in desconheco_list]
+
+        def quebrar_texto(texto, max_chars=60):
+            if len(texto) <= max_chars: 
+                return texto
+            import textwrap
+            return "<br>".join(textwrap.wrap(texto, width=max_chars))
+
+        questions_formatted = [quebrar_texto(q) for q in questions]
+
+        fig_div = go.Figure()
+
+        fig_div.add_trace(go.Bar(
+            y=questions_formatted, x=desconheco_metade_neg,
+            name='Desconheço', orientation='h', marker_color='#95a5a6',
+            legendgroup='grp_desc', showlegend=True,
+            hoverinfo='text', hovertext=hover_desconheco,
+            visible='legendonly'
+        ))
+
+        fig_div.add_trace(go.Bar(
+            y=questions_formatted, x=desconheco_metade,
+            name='Desconheço', orientation='h', marker_color='#95a5a6',
+            legendgroup='grp_desc', showlegend=False,
+            text=text_desconheco, textposition='inside',
+            hoverinfo='text', hovertext=hover_desconheco,
+            visible='legendonly'
+        ))
+
+        fig_div.add_trace(go.Bar(
+            y=questions_formatted, x=discordo_neg_list,
+            name='Discordo', orientation='h', marker_color='#e74c3c',
+            text=[f"{x:.1f}%" if x > 1 else "" for x in discordo_list],
+            textposition='inside', insidetextanchor='middle',
+            hoverinfo='text+y', hovertext=[f"Discordância: {x:.1f}%" for x in discordo_list]
+        ))
+
+        fig_div.add_trace(go.Bar(
+            y=questions_formatted, x=concordo_list,
+            name='Concordo', orientation='h', marker_color='#2ecc71',
+            text=[f"{x:.1f}%" if x > 1 else "" for x in concordo_list],
+            textposition='inside', insidetextanchor='middle',
+            hoverinfo='text+y', hovertext=[f"Concordância: {x:.1f}%" for x in concordo_list]
+        ))
+
+        fig_div.update_layout(
+            barmode='relative',
+            title=f"Saldo de Opinião: {dim_sel}",
+            xaxis_title="% Rejeição <---> % Aprovação",
+            yaxis=dict(title=""),
+            bargap=0.3,
+            legend_title_text='Sentimento',
+            height=max(400, len(questions) * 60 + 150),
+            margin=dict(l=10, r=10, t=80, b=20)
+        )
+
+        fig_div.add_vline(x=0, line_width=1, line_color="black", opacity=0.3)
+
+        return fig_div
+

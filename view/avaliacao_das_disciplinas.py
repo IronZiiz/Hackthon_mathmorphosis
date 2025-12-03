@@ -87,20 +87,6 @@ def avaliacao_das_disciplinas_view():
         curso_value= curso_value,
         setor_value= setor_value)
 
-    df_disciplina = pd.DataFrame({
-    "RESPOSTA": ["Concordo", "Discordo", "Desconheço"],
-    "CONTAGEM": [40, 10, 8]
-    })
-
-    df_setor = pd.DataFrame({
-        "RESPOSTA": ["Concordo", "Discordo", "Desconheço"],
-        "CONTAGEM": [70, 20, 15]
-    })
-
-    df_curso = pd.DataFrame({
-        "RESPOSTA": ["Concordo", "Discordo", "Desconheço"],
-        "CONTAGEM": [55, 12, 5]
-    })
     col1, col2 = st.columns(2)
     with col1:
         _, fig_donut = service.grafico_distribuicao_total_donut()
@@ -111,80 +97,30 @@ def avaliacao_das_disciplinas_view():
         st.write("")
         st.plotly_chart(service.grafico_resumo_por_eixo(), use_container_width=True)
 
-    dimensoes = ["Dimensão 1", "Dimensão 2"]
+    st.subheader('Análise detalhada das perguntas')
+
+    df = service.df_disciplinas()
+    df_dim = df[['DIMENSAO_NUM', 'DIMENSAO_NOME']].drop_duplicates()
+
+    lista_dimensoes_formated = df_dim['DIMENSAO_NOME'].tolist()
+
     dim_sel = st.selectbox(
         "Selecione a Dimensão para Análise Detalhada:",
-        dimensoes
+        lista_dimensoes_formated
     )
+    dim_sel = int(dim_sel)
+    service = AvaliacaoDasDisciplinasService(
+        tipo_disciplina_value=tipo_disciplina_value,
+        disciplina_value= disciplina_value,
+        curso_value= curso_value,
+        setor_value= setor_value,
+        dimensao_value=  dim_sel
 
-    questions = [
-        "A disciplina apresenta boa organização geral",
-        "Os materiais utilizados são adequados",
-        "A infraestrutura atende às necessidades",
-        "O docente promove participação dos estudantes"
-    ]
+        )
+    
+    st.plotly_chart(service.grafico_saldo_opiniao_dimensao(), use_container_width=True, key = "grafico_saldo_opiniao")
 
-    concordo_list = [70, 55, 62, 80]
-    discordo_list = [15, 30, 20, 10]
-    discordo_neg_list = [-x for x in discordo_list]
-
-    def quebrar_texto(texto, max_chars=50):
-        if len(texto) <= max_chars:
-            return texto
-        palavras = texto.split()
-        linhas = []
-        linha = ""
-        for p in palavras:
-            if len(linha) + len(p) + 1 <= max_chars:
-                linha += p + " "
-            else:
-                linhas.append(linha.strip())
-                linha = p + " "
-        if linha:
-            linhas.append(linha.strip())
-        return "<br>".join(linhas)
-
-    questions_formatted = [quebrar_texto(q) for q in questions]
-
-    fig_div = go.Figure()
-
-    fig_div.add_trace(go.Bar(
-        y=questions_formatted,
-        x=discordo_neg_list,
-        name='Discordo',
-        orientation='h',
-        marker_color='#e74c3c',
-        text=[f"{x:.1f}%" for x in discordo_list],
-        textposition='auto',
-        hoverinfo='text+y',
-        hovertext=[f"Discordância: {x:.1f}%" for x in discordo_list]
-    ))
-
-    fig_div.add_trace(go.Bar(
-        y=questions_formatted,
-        x=concordo_list,
-        name='Concordo',
-        orientation='h',
-        marker_color='#2ecc71',
-        text=[f"{x:.1f}%" for x in concordo_list],
-        textposition='auto',
-        hoverinfo='text+y',
-        hovertext=[f"Concordância: {x:.1f}%" for x in concordo_list]
-    ))
-
-    fig_div.update_layout(
-        barmode='relative',
-        title=f"Saldo de Opinião por Questão: {dim_sel}",
-        xaxis_title="% Rejeição <---> % Aprovação",
-        yaxis=dict(title=""),
-        bargap=0.3,
-        legend_title_text='Sentimento',
-        height=len(questions) * 60 + 200
-    )
-
-    fig_div.add_vline(x=0, line_width=1, line_color="black")
-
-    st.plotly_chart(fig_div, use_container_width=True)
+    
 
     st.header("Comparação com o Setor e Curso")
     col1, col2 = st.columns(2)
@@ -195,17 +131,6 @@ def avaliacao_das_disciplinas_view():
 
     with col2:
         _, fig_donut_curso = service.grafico_donut_curso()
-
-        fig = px.pie(
-            df_curso,
-            values="CONTAGEM",
-            names="RESPOSTA",
-            hole=0.5,
-            color="RESPOSTA",
-            color_discrete_map=COLOR_MAP
-        )
-        fig.update_traces(textposition="inside", textinfo="percent+label")
-        fig.update_layout(showlegend=False, margin=dict(t=0,b=0,l=0,r=0))
         st.plotly_chart(fig_donut_curso, use_container_width=True)
 
    
