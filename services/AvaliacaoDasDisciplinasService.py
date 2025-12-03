@@ -39,36 +39,48 @@ class AvaliacaoDasDisciplinasService(DataLoader):
 
         return df_disciplinas
     
-    def _total_respostas_ano_atual(self): 
+    def _total_respostas_ano_atual(self):
         df = self.df_disciplinas()
-        df = df[['VALOR_RESPOSTA']]
-        total_respostas = len(df)
-        return total_respostas
-    
-    def get_total_respondentes_ano_atual(self) ->int: 
+        return len(df)
+
+
+    def get_total_respondentes_ano_atual(self) -> int:
         df = self.df_disciplinas()
         return df["ID_PESQUISA"].nunique()
+
 
     def get_concordancia_atual(self) -> float:
         df = self.df_disciplinas()
         total = self._total_respostas_ano_atual()
-        concordancia = len(df[df["VALOR_RESPOSTA"] == 1])
-        return (concordancia / total ) * 100
 
-    def get_discordancia_atual(self) -> float: 
-        df = self.df_disciplinas()
-        df = df[['VALOR_RESPOSTA']]
-        total_respostas = self._total_respostas_ano_atual() 
-        pct_insatisfacao_ano_atual = (df['VALOR_RESPOSTA'].eq(-1).sum() / total_respostas) * 100
-        return pct_insatisfacao_ano_atual
-    
-    def get_desconhecimento(self) -> float: 
+        if total == 0:
+            return 0
+
+        concordo = df['VALOR_RESPOSTA'].eq(1).sum()
+        return (concordo / total) * 100
+
+
+    def get_discordancia_atual(self) -> float:
         df = self.df_disciplinas()
         total = self._total_respostas_ano_atual()
-        discordancia = len(df[df["VALOR_RESPOSTA"] == 0])
 
-        return (discordancia / total ) * 100
-    
+        if total == 0:
+            return 0
+
+        discordo = df['VALOR_RESPOSTA'].eq(-1).sum()
+        return (discordo / total) * 100
+
+
+    def get_desconhecimento(self) -> float:
+        df = self.df_disciplinas()
+        total = self._total_respostas_ano_atual()
+
+        if total == 0:
+            return 0
+
+        desconheco = df['VALOR_RESPOSTA'].eq(0).sum()
+        return (desconheco / total) * 100
+
     def total_respondentes_ano_passado(self): 
         qtd_respondentes_ano_atual = self.get_total_respondentes_ano_atual()
         qtd_respondentes_ano_passado = 2000
@@ -174,7 +186,58 @@ class AvaliacaoDasDisciplinasService(DataLoader):
 
 
         return total_resp, fig_donut
-        
+    
+    def get_respondentes_filtrados(self):
+        df = self.df_filtrado_pela_disciplina_curso_setor()
+
+        if df.empty:
+            return 0, 0
+
+        total_respondentes = df['ID_PESQUISA'].nunique()
+        total_respostas = len(df)
+
+        return total_respondentes, total_respostas
+
+
+    def get_concordancia_filtrado(self):
+        df = self.df_filtrado_pela_disciplina_curso_setor()
+        _, total_respostas = self.get_respondentes_filtrados()
+
+        if total_respostas == 0:
+            return 0, 0
+
+        total_concordo = df['VALOR_RESPOSTA'].eq(1).sum()
+        pct = (total_concordo / total_respostas) * 100
+
+        return pct, total_concordo
+
+
+    def get_discordancia_filtrado(self):
+        df = self.df_filtrado_pela_disciplina_curso_setor()
+        _, total_respostas = self.get_respondentes_filtrados()
+
+        if total_respostas == 0:
+            return 0, 0
+
+        total_discordo = df['VALOR_RESPOSTA'].eq(-1).sum()
+        pct = (total_discordo / total_respostas) * 100
+
+        return pct, total_discordo
+
+
+    def get_desconhecimento_filtrado(self):
+        df = self.df_filtrado_pela_disciplina_curso_setor()
+        _, total_respostas = self.get_respondentes_filtrados()
+
+        if total_respostas == 0:
+            return 0, 0
+
+        total_desc = df['VALOR_RESPOSTA'].eq(0).sum()
+        pct = (total_desc / total_respostas) * 100
+
+        return pct, total_desc
+
+
     def grafico_resumo_por_eixo(self):
         COLOR_MAP = {
         'Concordo': '#2ecc71',

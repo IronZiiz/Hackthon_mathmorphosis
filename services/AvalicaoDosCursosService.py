@@ -22,39 +22,39 @@ class AvaliacaoDosCursosService(DataLoader):
     def get_total_respondentes(self) -> int:
         return self.df["ID_PESQUISA"].nunique()
     
+    def get_total_respondentes(self) -> int:
+        return self.df["ID_PESQUISA"].nunique()
+
+
     def get_concordancia(self) -> float:
         df = self.df
         total = len(df)
-        concordancia = len(df[df["VALOR_RESPOSTA"] > 0])
+        if total == 0:
+            return 0
+
+        concordancia = df["VALOR_RESPOSTA"].eq(1).sum()
         return (concordancia / total) * 100
-    
+
+
     def get_discordancia(self) -> float:
         df = self.df
         total = len(df)
-        discordancia = len(df[df["VALOR_RESPOSTA"] < 0 ])
+        if total == 0:
+            return 0
 
+        discordancia = df["VALOR_RESPOSTA"].eq(-1).sum()
         return (discordancia / total) * 100
-    
+
+
     def get_desconhecimento(self) -> float:
         df = self.df
         total = len(df)
-        desconhecimento = len(df[df["VALOR_RESPOSTA"] == 0])
+        if total == 0:
+            return 0
+
+        desconhecimento = df["VALOR_RESPOSTA"].eq(0).sum()
         return (desconhecimento / total) * 100
-    
-    def get_concordancia_total(self) -> int:
-        df = self.df
-        concordancia = len(df[df["VALOR_RESPOSTA"] > 0])
-        return concordancia
-    
-    def get_discordancia_total(self) -> int:
-        df = self.df
-        discordancia = len(df[df["VALOR_RESPOSTA"] < 0])
-        return discordancia
-    
-    def get_desconhecimento_total(self) -> int:
-        df = self.df
-        desconhecimento = len(df[df["VALOR_RESPOSTA"] == 0])
-        return desconhecimento
+
     
     def total_respondentes_ano_passado(self): 
         qtd_respondentes_ano_atual = self.get_total_respondentes()
@@ -93,8 +93,10 @@ class AvaliacaoDosCursosService(DataLoader):
 
         return df_curso
     
-    def grafico_distribuicao_donut(self):
-        curso_value = self.curso_value
+    def grafico_distribuicao_total_donut(self):
+        curso_value = self.curso_value 
+         
+
         COLOR_MAP = {
             'Concordo': '#2ecc71',
             'Discordo': '#e74c3c',
@@ -124,13 +126,24 @@ class AvaliacaoDosCursosService(DataLoader):
             textinfo='percent+label'
             
         )
+        if curso_value =='Todas': 
+            fig_donut.update_layout(
+            
+                title=f"Distribuição Geral de Respostas: {curso_value}",
+                showlegend=False,
+                margin=dict(t=40, b=0, l=0, r=0),
+                height=400
+            )
+        else:
+            fig_donut.update_layout(
+            
+                title={
+                    'text': f"Distribuição Geral de Respostas",
+                },
+                showlegend=False,
+                margin=dict(t=100, b=0, l=0, r=0),
+                height=400)
 
-        fig_donut.update_layout(
-            title=f"Distribuição Geral de Respostas curso: {curso_value}",
-            showlegend=False,
-            margin=dict(t=40, b=0, l=0, r=0),
-            height=400
-        )
 
         return total_resp, fig_donut
     
@@ -192,7 +205,52 @@ class AvaliacaoDosCursosService(DataLoader):
         )
 
         return fig_bar
+    def get_total_respondentes_filtrado(self) -> int:
+        df = self.df_curso_filtrado_selecionado()
+        if df.empty:
+            return 0
+        return df["ID_PESQUISA"].nunique()
     
+    def get_total_respostas_filtrado(self) -> int:
+        df = self.df_curso_filtrado_selecionado()
+        return len(df)
+
+    def get_concordancia_filtrado(self):
+        df = self.df_curso_filtrado_selecionado()
+        total = len(df)
+
+        if total == 0:
+            return 0, 0
+
+        total_concordo = df["VALOR_RESPOSTA"].eq(1).sum()
+        pct = (total_concordo / total) * 100
+
+        return pct, total_concordo
+
+    def get_discordancia_filtrado(self):
+        df = self.df_curso_filtrado_selecionado()
+        total = len(df)
+
+        if total == 0:
+            return 0, 0
+
+        total_discordo = df["VALOR_RESPOSTA"].eq(-1).sum()
+        pct = (total_discordo / total) * 100
+
+        return pct, total_discordo
+
+    def get_desconhecimento_filtrado(self):
+        df = self.df_curso_filtrado_selecionado()
+        total = len(df)
+
+        if total == 0:
+            return 0, 0
+
+        total_desconheco = df["VALOR_RESPOSTA"].eq(0).sum()
+        pct = (total_desconheco / total) * 100
+
+        return pct, total_desconheco
+
     def grafico_radar_dimensao_curso(self):
         """
         Gera um radar comparando Curso vs Setor usando ID_PERGUNTA no eixo.

@@ -73,7 +73,7 @@ def avaliacao_institucional_view():
             label="Concordância",
             border=BORDER,
             value=f"{service.satisfacao_ano_atual():.2f}%",
-            delta=f"Ano passado:{service.satisfacao_ano_passado():.2f}%",
+            delta=f"{service.satisfacao_ano_passado():.2f}% Ano passado",
             delta_color="normal"
         )
         
@@ -82,7 +82,7 @@ def avaliacao_institucional_view():
             label="Discordância",
             border=BORDER,
             value=f"{service.insatisfacao_ano_atual():.2f}%",
-            delta=f"Ano passado: {service.insatisfacao_ano_passado():.2f}%",
+            delta=f"{service.insatisfacao_ano_passado():.2f}% Ano passado",
             delta_color="normal"
         )
         
@@ -91,7 +91,7 @@ def avaliacao_institucional_view():
             label="Desconhecimento",
             border=BORDER,
             value=f"{service.desconhecimento_ano_atual():.2f}%",
-            delta=f"Ano passado:{service.desconhecimento_ano_passado():.2f}%",
+            delta=f"{service.desconhecimento_ano_passado():.2f}% Ano passado",
             delta_color="normal"
         )
     
@@ -123,6 +123,8 @@ def avaliacao_institucional_view():
             key="filtro_perguntas"
         )
         
+    
+
     service = AvaliacaoInstitucionalService(
         eixos_value=eixo_value,
         perguntas_value=perguntas_value
@@ -159,6 +161,52 @@ def avaliacao_institucional_view():
     with col_graf2:
 
         st.plotly_chart(service.grafico_resumo_por_eixo(), use_container_width=True)
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        total_respondentes, _ = service.get_respondentes_filtrados()
+        st.metric(
+            label="Total Respondentes Filtrados",
+
+            border=BORDER,
+            value=total_respondentes,
+            delta=f"{pct_comparacao:.1f}% Ano passado: {qtd_respondentes_ano_passado}"
+        )
+
+
+    with col2:
+        pct_concordo, total_concordo = service.get_concordancia_filtrado()
+        st.metric(
+            label="Concordância",
+            border=BORDER,
+            value=f"{pct_concordo:.2f}%",
+            delta=f"{service.satisfacao_ano_passado():.2f}% Ano passado",
+            delta_color="normal"
+        )
+        st.warning(f"Total respostas Concordo: {total_concordo}")
+
+
+    with col3:
+        pct_discordo, total_discordo = service.get_discordancia_filtrado()
+        st.metric(
+            label="Discordância",
+            border=BORDER,
+            value=f"{pct_discordo:.2f}%",
+            delta=f"{service.insatisfacao_ano_passado():.2f}% Ano passado",
+            delta_color="normal"
+        )
+        st.warning(f"Total respostas Discordo: {total_discordo}")
+
+
+    with col4:
+        pct_desc, total_desc = service.get_desconhecimento_filtrado()
+        st.metric(
+            label="Desconhecimento",
+            border=BORDER,
+            value=f"{pct_desc:.2f}%",
+            delta=f"{service.desconhecimento_ano_passado():.2f}% Ano passado",
+            delta_color="normal"
+        )
+        st.warning(f"Total respostas Desconheço: {total_desc}")
 
     st.markdown("---")
 

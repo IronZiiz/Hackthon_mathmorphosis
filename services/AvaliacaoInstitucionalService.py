@@ -148,6 +148,69 @@ class AvaliacaoInstitucionalService(DataLoader):
         )
 
         return total_resp, fig_donut
+    
+    def get_respondentes_filtrados(self):
+        df = self.filtrar_dados_institucionais()
+        if df.empty or 'ID_PESQUISA' not in df.columns:
+            return 0, 0
+
+        total_respondentes = df['ID_PESQUISA'].nunique()
+        total_respostas = len(df)
+
+        return total_respondentes, total_respostas
+
+
+    def get_concordancia_filtrado(self):
+        df = self.filtrar_dados_institucionais()
+        _, total_respostas = self.get_respondentes_filtrados()
+
+        if df.empty or 'RESPOSTA' not in df.columns:
+            return 0, 0
+
+        total_concordo = df['RESPOSTA'].eq('Concordo').sum()
+
+        if total_respostas == 0:
+            return 0, 0
+
+        pct = (total_concordo / total_respostas) * 100
+        return pct, total_concordo
+
+
+
+    def get_discordancia_filtrado(self):
+        df = self.filtrar_dados_institucionais()
+        _, total_respostas = self.get_respondentes_filtrados()
+
+        if df.empty or 'RESPOSTA' not in df.columns:
+            return 0, 0
+
+        total_discordo = df['RESPOSTA'].eq('Discordo').sum()
+
+        if total_respostas == 0:
+            return 0, 0
+
+        pct = (total_discordo / total_respostas) * 100
+        return pct, total_discordo
+
+
+
+    def get_desconhecimento_filtrado(self):
+        df = self.filtrar_dados_institucionais()
+        _, total_respostas = self.get_respondentes_filtrados()
+
+        if df.empty or 'RESPOSTA' not in df.columns:
+            return 0, 0
+
+        total_desc = df['RESPOSTA'].eq('Desconheço').sum()
+
+        if total_respostas == 0:
+            return 0, 0
+
+        pct = (total_desc / total_respostas) * 100
+        return pct, total_desc
+
+
+
 
     def grafico_resumo_por_eixo(self):
         COLOR_MAP = {

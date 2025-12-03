@@ -130,15 +130,66 @@ def avaliacao_das_disciplinas_view():
 
     col1, col2 = st.columns(2)
     with col1:
-        _, fig_donut = service.grafico_distribuicao_total_donut()
+        total_resp, fig_donut = service.grafico_distribuicao_total_donut()
 
-        st.plotly_chart(fig_donut, use_container_width=True)
+        if total_resp > 0:
+            st.plotly_chart(fig_donut, use_container_width=True)
+            st.caption(f"Total de respostas consideradas por pergunta:{total_resp}")
+        else:
+            st.warning("Sem dados para os filtros selecionados.")
     with col2:
         st.write("")
         st.write("")
         st.plotly_chart(service.grafico_resumo_por_eixo(), use_container_width=True)
     
     st.warning("Sim e Não representam as respostas seletoras, ou seja aquelas que indicam uma opinião clara e dão sequência a possibilidade de corcordar, discordar ou desconhecer uma afirmação .", icon="⚠️")
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        total_respondentes, total_respostas = service.get_respondentes_filtrados()
+        st.metric(
+            label="Total Respondentes Filtrados",
+
+            border=BORDER,
+            value=total_respondentes,
+            delta=f"{pct_ano_passado:.1f}% Ano passado: {total_ano_passado}"
+        )
+
+
+    with col2:
+        pct_concordo, total_concordo = service.get_concordancia_filtrado()
+        st.metric(
+            label="Concordância",
+            border=BORDER,
+            value=f"{pct_concordo:.2f}%",
+            delta=f"{service.satisfacao_ano_passado():.2f}% Ano passado",
+            delta_color="normal"
+        )
+        st.warning(f"Total respostas Concordo: {total_concordo}")
+
+
+    with col3:
+        pct_discordo, total_discordo = service.get_discordancia_filtrado()
+        st.metric(
+            label="Discordância",
+            border=BORDER,
+            value=f"{pct_discordo:.2f}%",
+            delta=f"{service.insatisfacao_ano_passado():.2f}% Ano passado",
+            delta_color="normal"
+        )
+        st.warning(f"Total respostas Discordo: {total_discordo}")
+
+
+    with col4:
+        pct_desc, total_desc = service.get_desconhecimento_filtrado()
+        st.metric(
+            label="Desconhecimento",
+            border=BORDER,
+            value=f"{pct_desc:.2f}%",
+            delta=f"{service.desconhecimento_ano_passado():.2f}% Ano passado",
+            delta_color="normal"
+        )
+        st.warning(f"Total respostas Desconheço: {total_desc}")
 
     st.markdown("---")
 
@@ -207,7 +258,7 @@ def avaliacao_das_disciplinas_view():
         _, fig_donut_curso = service.grafico_donut_curso()
         st.plotly_chart(fig_donut_curso, use_container_width=True)
 
-    st.warning("Sim e Não representam as respostas seletoras, ou seja aquelas que indicam uma opinião clara e dão sequência a possibilidade de corcordar, discordar ou desconhecer uma afirmação .", icon="⚠️")
+    st.warning("Sim e Não representam as respostas seletoras, ou seja aquelas que indicam uma opinião clara e dão sequência a possibilidade de corcordar, discordar ou desconhecer uma afirmação . Assumiu-se sim como concordância e Não como discordância.", icon="⚠️")
    
     st.markdown("---")
     st.header("Distribuição Geral do Sentimento Médio")

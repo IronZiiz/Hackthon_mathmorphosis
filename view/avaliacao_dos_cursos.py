@@ -126,8 +126,13 @@ def avaliacao_dos_cursos_view():
     col1, col2 = st.columns(2)
 
     with col1:
-        total_resp, fig_donut = service.grafico_distribuicao_donut()
-        st.plotly_chart(fig_donut, use_container_width=True, key = 'plot_pie_curso')
+        total_resp, fig_donut = service.grafico_distribuicao_total_donut()
+        if total_resp > 0:
+            st.plotly_chart(fig_donut, use_container_width=True)
+            st.caption(f"Total de respostas consideradas por pergunta:{total_resp}")
+        else:
+            st.warning("Sem dados para os filtros selecionados.")
+        
 
     with col2:
         st.write("")
@@ -138,6 +143,58 @@ def avaliacao_dos_cursos_view():
     
     
 
+    col1, col2, col3, col4 = st.columns(4)
+
+
+    with col1:
+        total_respondentes_filtrado = service.get_total_respondentes_filtrado()
+        pct_ano_passado, total_ano_passado = service.total_respondentes_ano_passado()
+
+        st.metric(
+            label="Total Respondentes Filtrados",
+            border=BORDER,
+            value=total_respondentes_filtrado,
+            delta=f"{pct_ano_passado:.1f}% Ano passado: {total_ano_passado}"
+        )
+
+
+    with col2:
+        pct_concordo, total_concordo = service.get_concordancia_filtrado()
+        st.metric(
+            label="Concordância",
+            border=BORDER,
+            value=f"{pct_concordo:.2f}%",
+            delta=f"{service.satisfacao_ano_passado():.2f}% Ano passado",
+            delta_color="normal"
+        )
+        st.warning(f"Total respostas Concordo: {total_concordo}")
+
+
+    with col3:
+        pct_discordo, total_discordo = service.get_discordancia_filtrado()
+        st.metric(
+            label="Discordância",
+            border=BORDER,
+            value=f"{pct_discordo:.2f}%",
+            delta=f"{service.insatisfacao_ano_passado():.2f}% Ano passado",
+            delta_color="normal"
+        )
+        st.warning(f"Total respostas Discordo: {total_discordo}")
+
+
+    with col4:
+        pct_desc, total_desc = service.get_desconhecimento_filtrado()
+        st.metric(
+            label="Desconhecimento",
+            border=BORDER,
+            value=f"{pct_desc:.2f}%",
+            delta=f"{service.desconhecimento_ano_passado():.2f}% Ano passado",
+            delta_color="normal"
+        )
+        st.warning(f"Total respostas Desconheço: {total_desc}")
+
+
+    st.markdown("---")
     dimensoes = service.df['DIMENSAO_NOME'].unique().tolist()
 
     st.markdown("---")
