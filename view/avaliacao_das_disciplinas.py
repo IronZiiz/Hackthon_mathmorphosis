@@ -11,11 +11,35 @@ COLOR_MAP = {
     'Discordo': '#e74c3c',
     'Desconheço': '#95a5a6'
 }
+COLOR_UFPR_BLUE = '#00548e'
+COLOR_UFPR_BLACK ='#231F20'
 
 def avaliacao_das_disciplinas_view():
     
     
-    st.title('Resultados Avaliação Disciplinas')
+    st.markdown(
+        f"""
+        <h1 style="text-align:left; font-size:3.4rem; font-weight:700;">
+            <span style="color:{COLOR_UFPR_BLACK}">Resultados</span>
+            <span style="color:{COLOR_UFPR_BLUE}">Avaliação das Disciplinas</span>
+        </h1>
+        """,
+        unsafe_allow_html=True
+    )
+    st.markdown(
+        """
+        <p style="
+            text-align:left;
+            max-width:750px;
+            margin:0px 0px 20px 0px;
+            font-size:1rem;
+            color:#555;
+            opacity:1;
+            line-height:1;
+        ">
+        A Avaliação das Disciplinas é uma ferramenta essencial para medir a satisfação e o engajamento dos estudantes em relação às disciplinas oferecidas pela instituição.
+        </p>
+        """,unsafe_allow_html=True)
 
     col1,col2,_,_,_,_= st.columns(6)
     with col1:
