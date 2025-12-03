@@ -142,7 +142,7 @@ def avaliacao_das_disciplinas_view():
         st.write("")
         st.plotly_chart(service.grafico_resumo_por_eixo(), use_container_width=True)
     
-    st.warning("Sim e Não representam as respostas seletoras, ou seja aquelas que indicam uma opinião clara e dão sequência a possibilidade de corcordar, discordar ou desconhecer uma afirmação .", icon="⚠️")
+    st.warning("Sim e Não representam as respostas seletoras, ou seja aquelas que indicam uma opinião clara e dão sequência a possibilidade de corcordar, discordar ou desconhecer uma afirmação.Sim foi considerado como concordo e Não como discordo.", icon="⚠️")
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
